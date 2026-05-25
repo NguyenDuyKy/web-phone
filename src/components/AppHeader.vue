@@ -19,6 +19,14 @@
         <i class="bi bi-sliders2"></i> Cấu hình
       </button>
       <button
+        class="btn-config btn-config--icon btn-tts-trigger"
+        :class="{ active: store.ttsModal.active }"
+        @click.stop="onToggleTts"
+        title="Chuyển văn bản thành giọng nói"
+      >
+        <i class="bi bi-soundwave"></i>
+      </button>
+      <button
         class="btn-config btn-config--icon"
         @click="onToggleTheme"
         :title="store.theme === 'dark' ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'"
@@ -47,7 +55,7 @@
 </template>
 
 <script>
-import { store, openConfigModal, toggleTheme, toggleCallModal } from '../store';
+import { store, openConfigModal, toggleTheme, toggleCallModal, toggleTtsModal } from '../store';
 
 export default {
   name: 'AppHeader',
@@ -58,6 +66,7 @@ export default {
     onOpenConfig() { openConfigModal(); },
     onToggleTheme() { toggleTheme(); },
     onToggleCall() { toggleCallModal(); },
+    onToggleTts() { toggleTtsModal(); },
   },
 };
 </script>

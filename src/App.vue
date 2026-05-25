@@ -29,6 +29,7 @@
     <InfoModal />
     <ConfigModal />
     <CallModal />
+    <TtsModal />
   </div>
 </template>
 
@@ -42,6 +43,7 @@ import ErrorModal from './components/ErrorModal.vue';
 import InfoModal from './components/InfoModal.vue';
 import ConfigModal from './components/ConfigModal.vue';
 import CallModal from './components/CallModal.vue';
+import TtsModal from './components/TtsModal.vue';
 
 export default {
   name: 'App',
@@ -54,6 +56,7 @@ export default {
     InfoModal,
     ConfigModal,
     CallModal,
+    TtsModal,
   },
   data() {
     return { store };

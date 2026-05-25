@@ -12,6 +12,7 @@ export const store = reactive({
     token: '',
     hotline: '',
     dialInput: '',
+    ttsWorkerUrl: '',
 
     currentCall: null,
     isVideoCall: false,
@@ -31,8 +32,19 @@ export const store = reactive({
 
     errorModal: { active: false, title: '', message: '' },
     infoModal: { active: false, input: '' },
-    configModal: { active: false, token: '', hotline: '', toNumber: '' },
+    configModal: { active: false, token: '', hotline: '', toNumber: '', ttsWorkerUrl: '' },
     callModal: { active: false },
+    ttsModal: {
+        active: false,
+        text: '',
+        voice: '',
+        speed: 1,
+        isPlaying: false,
+        loading: false,
+        error: '',
+        availableVoices: [],
+        audioUrl: '',
+    },
 
     callType: 'gsm',
 
@@ -112,6 +124,7 @@ export async function initEnv() {
     store.serverConfig = STRINGEE_SERVERS;
     loadDefaultConfig();
     loadCallType();
+    initTtsVoices();
 }
 
 function loadCallType() {
@@ -166,6 +179,7 @@ function loadDefaultConfig() {
         if (data.token) store.token = data.token;
         if (data.hotline) store.hotline = data.hotline;
         if (data.toNumber) store.dialInput = data.toNumber;
+        if (data.ttsWorkerUrl) store.ttsWorkerUrl = data.ttsWorkerUrl;
         addLog('Đã nạp cấu hình mặc định từ localStorage', 'info');
     } catch (err) {
         addLog('Lỗi đọc cấu hình mặc định: ' + err.message, 'error');
@@ -181,6 +195,7 @@ export function openConfigModal() {
     store.configModal.token = saved.token || store.token || '';
     store.configModal.hotline = saved.hotline || store.hotline || '';
     store.configModal.toNumber = saved.toNumber || store.dialInput || '';
+    store.configModal.ttsWorkerUrl = saved.ttsWorkerUrl || store.ttsWorkerUrl || '';
     store.configModal.active = true;
 }
 
@@ -188,17 +203,35 @@ export function closeConfigModal() {
     store.configModal.active = false;
 }
 
+function normalizeWorkerUrl(url) {
+    if (!url) return '';
+    let u = url.trim();
+    if (!u) return '';
+    if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
+    return u.replace(/\/+$/, '');
+}
+
 export function saveDefaultConfig() {
+    const normalizedUrl = normalizeWorkerUrl(store.configModal.ttsWorkerUrl);
+    store.configModal.ttsWorkerUrl = normalizedUrl;
     const data = {
         token: store.configModal.token.trim(),
         hotline: store.configModal.hotline.trim(),
         toNumber: store.configModal.toNumber.trim(),
+        ttsWorkerUrl: normalizedUrl,
     };
     try {
         localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(data));
         if (data.token) store.token = data.token;
         if (data.hotline) store.hotline = data.hotline;
         if (data.toNumber) store.dialInput = data.toNumber;
+        const prevUrl = store.ttsWorkerUrl;
+        store.ttsWorkerUrl = data.ttsWorkerUrl;
+        if (prevUrl !== data.ttsWorkerUrl) {
+            store.ttsModal.voice = '';
+            store.ttsModal.availableVoices = [];
+            initTtsVoices();
+        }
         addLog('Đã lưu cấu hình mặc định vào localStorage', 'success');
         closeConfigModal();
     } catch (err) {
@@ -212,6 +245,7 @@ export function clearDefaultConfig() {
         store.configModal.token = '';
         store.configModal.hotline = '';
         store.configModal.toNumber = '';
+        store.configModal.ttsWorkerUrl = '';
         addLog('Đã xoá cấu hình mặc định trong localStorage', 'warn');
     } catch (err) {
         addLog('Lỗi xoá cấu hình: ' + err.message, 'error');
@@ -261,7 +295,7 @@ function setupClientEvents(c) {
             addLog('Xác thực thành công! User ID: ' + res.userId, 'success');
             setConnected(res.userId);
         } else {
-            addLog('Xác thực thất bại: ' + res.message, 'error');
+            addLog('Xác thực thất bại: ' + JSON.stringify(res), 'error');
             setDisconnected();
         }
     });
@@ -452,7 +486,6 @@ function setupCall2Events(call) {
     call.on('otherdevice', (data) => {
         addLog('[Call2] Other device state: ' + JSON.stringify(data), 'info');
         if (data && data.type === 'CALL2_STATE' && (data.code === 200 || data.code === 486)) {
-            if (store.hasIncoming) store.callModal.active = false;
             store.hasIncoming = false;
             stopRingtone();
         }
@@ -479,7 +512,6 @@ function setupCallEvents(call) {
     call.on('otherdevice', (data) => {
         addLog('[Call] Other device state: ' + JSON.stringify(data), 'info');
         if (data && data.type === 'CALL_STATE' && (data.code === 200 || data.code === 486)) {
-            if (store.hasIncoming) store.callModal.active = false;
             store.hasIncoming = false;
             stopRingtone();
         }
@@ -540,6 +572,195 @@ export function closeCallModal() {
 
 export function toggleCallModal() {
     store.callModal.active = !store.callModal.active;
+}
+
+export function openTtsModal() {
+    store.ttsModal.active = true;
+}
+
+export function closeTtsModal() {
+    store.ttsModal.active = false;
+}
+
+export function toggleTtsModal() {
+    store.ttsModal.active = !store.ttsModal.active;
+}
+
+export function setTtsVoice(voice) {
+    if (!voice) return;
+    store.ttsModal.voice = voice;
+}
+
+export function setTtsSpeed(speed) {
+    const n = Number(speed);
+    if (!Number.isFinite(n) || n < 0.25 || n > 4) return;
+    store.ttsModal.speed = n;
+}
+
+export const GOOGLE_TTS_VOICES = [
+    { name: 'vi', lang: 'vi-VN', localService: false, default: false },
+    { name: 'en-US', lang: 'en-US', localService: false, default: false },
+    { name: 'en-GB', lang: 'en-GB', localService: false, default: false },
+    { name: 'ja', lang: 'ja-JP', localService: false, default: false },
+    { name: 'zh-CN', lang: 'zh-CN', localService: false, default: false },
+    { name: 'zh-TW', lang: 'zh-TW', localService: false, default: false },
+    { name: 'ko', lang: 'ko-KR', localService: false, default: false },
+    { name: 'fr', lang: 'fr-FR', localService: false, default: false },
+    { name: 'de', lang: 'de-DE', localService: false, default: false },
+    { name: 'es', lang: 'es-ES', localService: false, default: false },
+    { name: 'it', lang: 'it-IT', localService: false, default: false },
+    { name: 'pt-BR', lang: 'pt-BR', localService: false, default: false },
+    { name: 'ru', lang: 'ru-RU', localService: false, default: false },
+    { name: 'th', lang: 'th-TH', localService: false, default: false },
+    { name: 'id', lang: 'id-ID', localService: false, default: false },
+    { name: 'hi', lang: 'hi-IN', localService: false, default: false },
+    { name: 'ar', lang: 'ar-SA', localService: false, default: false },
+];
+
+export function isTtsCloudMode() {
+    return !!(store.ttsWorkerUrl && store.ttsWorkerUrl.trim());
+}
+
+export function initTtsVoices() {
+    if (isTtsCloudMode()) {
+        store.ttsModal.availableVoices = GOOGLE_TTS_VOICES.slice();
+        if (!store.ttsModal.voice || !GOOGLE_TTS_VOICES.some((v) => v.name === store.ttsModal.voice)) {
+            store.ttsModal.voice = 'vi';
+        }
+        return;
+    }
+    if (typeof speechSynthesis === 'undefined') {
+        store.ttsModal.error = 'Trình duyệt không hỗ trợ Speech Synthesis.';
+        return;
+    }
+    const apply = () => {
+        const voices = speechSynthesis.getVoices();
+        store.ttsModal.availableVoices = voices.map((v) => ({
+            name: v.name,
+            lang: v.lang,
+            localService: v.localService,
+            default: v.default,
+        }));
+        if (!store.ttsModal.voice || !voices.some((v) => v.name === store.ttsModal.voice)) {
+            const vi = voices.find((v) => (v.lang || '').toLowerCase().startsWith('vi'));
+            const en = voices.find((v) => (v.lang || '').toLowerCase().startsWith('en'));
+            const dflt = voices.find((v) => v.default);
+            const pick = vi || en || dflt || voices[0];
+            if (pick) store.ttsModal.voice = pick.name;
+        }
+    };
+    apply();
+    if (!store.ttsModal.availableVoices.length) {
+        speechSynthesis.addEventListener('voiceschanged', apply, { once: true });
+    }
+}
+
+function _resetAudioUrl() {
+    if (store.ttsModal.audioUrl) {
+        try { URL.revokeObjectURL(store.ttsModal.audioUrl); } catch (e) { /* noop */ }
+        store.ttsModal.audioUrl = '';
+    }
+}
+
+async function _cloudTts() {
+    const text = store.ttsModal.text.trim();
+    const voice = store.ttsModal.voice;
+    const base = store.ttsWorkerUrl.trim().replace(/\/$/, '');
+    const url = `${base}/?text=${encodeURIComponent(text)}&voice=${encodeURIComponent(voice)}`;
+    const res = await fetch(url);
+    if (!res.ok) {
+        let msg = `Worker trả về HTTP ${res.status}`;
+        try {
+            const data = await res.json();
+            if (data && data.error) msg = data.error;
+        } catch (e) { /* noop */ }
+        throw new Error(msg);
+    }
+    const blob = await res.blob();
+    if (!blob || blob.size === 0) throw new Error('Worker trả về audio rỗng.');
+    return blob;
+}
+
+export async function speakTts() {
+    const text = store.ttsModal.text.trim();
+    if (!text) {
+        store.ttsModal.error = 'Vui lòng nhập nội dung cần đọc.';
+        return;
+    }
+    if (text.length > 500) {
+        store.ttsModal.error = 'Nội dung quá dài (tối đa 500 ký tự).';
+        return;
+    }
+    store.ttsModal.error = '';
+
+    if (isTtsCloudMode()) {
+        _resetAudioUrl();
+        store.ttsModal.loading = true;
+        try {
+            const blob = await _cloudTts();
+            store.ttsModal.audioUrl = URL.createObjectURL(blob);
+            addLog('TTS đã sinh: ' + text.slice(0, 40) + (text.length > 40 ? '…' : ''), 'success');
+        } catch (err) {
+            store.ttsModal.error = err.message || 'Lỗi không xác định';
+            addLog('Lỗi TTS: ' + store.ttsModal.error, 'error');
+        } finally {
+            store.ttsModal.loading = false;
+        }
+        return;
+    }
+
+    if (typeof speechSynthesis === 'undefined') {
+        store.ttsModal.error = 'Trình duyệt không hỗ trợ Speech Synthesis.';
+        return;
+    }
+    if (store.ttsModal.isPlaying) speechSynthesis.cancel();
+
+    const utt = new SpeechSynthesisUtterance(text);
+    const voices = speechSynthesis.getVoices();
+    const v = voices.find((x) => x.name === store.ttsModal.voice);
+    if (v) {
+        utt.voice = v;
+        utt.lang = v.lang;
+    }
+    utt.rate = store.ttsModal.speed || 1;
+    utt.pitch = 1;
+    utt.volume = 1;
+    utt.onstart = () => { store.ttsModal.isPlaying = true; };
+    utt.onend = () => { store.ttsModal.isPlaying = false; };
+    utt.onerror = (e) => {
+        store.ttsModal.isPlaying = false;
+        if (e && e.error !== 'canceled' && e.error !== 'interrupted') {
+            store.ttsModal.error = 'Lỗi phát: ' + (e.error || 'unknown');
+            addLog('Lỗi TTS: ' + (e.error || 'unknown'), 'error');
+        }
+    };
+    speechSynthesis.speak(utt);
+    addLog('TTS phát: ' + text.slice(0, 40) + (text.length > 40 ? '…' : ''), 'info');
+}
+
+export function stopTts() {
+    if (typeof speechSynthesis !== 'undefined') {
+        speechSynthesis.cancel();
+    }
+    store.ttsModal.isPlaying = false;
+}
+
+export function downloadTts() {
+    if (!store.ttsModal.audioUrl) return;
+    const a = document.createElement('a');
+    a.href = store.ttsModal.audioUrl;
+    const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    a.download = `tts-${ts}.mp3`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+export function resetTts() {
+    stopTts();
+    _resetAudioUrl();
+    store.ttsModal.text = '';
+    store.ttsModal.error = '';
 }
 
 export function openInfoModal() {

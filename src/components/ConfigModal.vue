@@ -66,6 +66,27 @@
             >
           </div>
         </div>
+
+        <div class="cfg-field">
+          <label for="cfgTtsWorker" class="cfg-label">
+            <span class="cfg-label__index">04</span>
+            <span class="cfg-label__text">TTS Worker URL</span>
+            <span class="cfg-label__hint">Cloudflare · Tuỳ chọn</span>
+          </label>
+          <input
+            id="cfgTtsWorker"
+            type="text"
+            class="cfg-input"
+            v-model="store.configModal.ttsWorkerUrl"
+            placeholder="https://edge-tts.your-subdomain.workers.dev"
+            autocomplete="off"
+            spellcheck="false"
+          >
+          <p class="cfg-hint">
+            Để trống nếu dùng giọng đọc hệ thống (không tải MP3). Có URL → dùng Google TTS qua proxy + download MP3. Xem hướng dẫn deploy ở thư mục
+            <code>worker/</code> trong repo.
+          </p>
+        </div>
       </div>
 
       <footer class="config-modal__foot">
