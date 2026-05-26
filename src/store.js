@@ -219,6 +219,14 @@ export function closeConfigModal() {
     store.configModal.active = false;
 }
 
+export function toggleConfigModal() {
+    if (store.configModal.active) {
+        closeConfigModal();
+    } else {
+        openConfigModal();
+    }
+}
+
 function normalizeWorkerUrl(url) {
     if (!url) return '';
     let u = url.trim();

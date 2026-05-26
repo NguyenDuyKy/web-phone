@@ -256,6 +256,34 @@
     text-shadow: 0 0 16px rgba(59, 130, 246, 0.15);
 }
 
+/* Video call overlay badges: keep dark glass treatment in light theme too,
+   because they sit on top of video (arbitrary content, often dark). */
+[data-theme="light"] .video-call .caller-name,
+[data-theme="light"] .video-call .call-status-text,
+[data-theme="light"] .video-call .call-timer {
+    background: rgba(8, 12, 22, 0.86);
+    border-color: rgba(255, 255, 255, 0.30);
+    color: #fff;
+    text-shadow:
+        0 1px 6px rgba(0, 0, 0, 0.85),
+        0 0 1px rgba(0, 0, 0, 0.60);
+    box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.45),
+        0 8px 24px rgba(0, 0, 0, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+[data-theme="light"] .video-call .call-status-text {
+    font-weight: 600;
+}
+
+[data-theme="light"] .video-call .call-status-text::before {
+    background: #4ade80;
+    box-shadow:
+        0 0 10px #4ade80,
+        0 0 0 1px rgba(0, 0, 0, 0.45);
+}
+
 [data-theme="light"] .call-action-btn {
     background: #ffffff;
     color: var(--text-primary);

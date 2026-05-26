@@ -25,8 +25,13 @@
         <option value="">DEFAULT · AUTO</option>
         <option v-for="(_v, k) in store.serverConfig" :key="k" :value="k">{{ k }}</option>
       </select>
-      <button class="btn-config" @click="onOpenConfig" title="Cấu hình mặc định">
-        <i class="bi bi-sliders2"></i> Cấu hình
+      <button
+        class="btn-config btn-config--icon btn-config-trigger"
+        :class="{ active: store.configModal.active }"
+        @click.stop="onToggleConfig"
+        title="Cấu hình mặc định"
+      >
+        <i class="bi bi-sliders2"></i>
       </button>
       <button
         class="btn-config btn-config--icon btn-tts-trigger"
@@ -65,7 +70,7 @@
 </template>
 
 <script>
-import { store, openConfigModal, toggleTheme, toggleCallModal, toggleTtsModal, toggleSidebar } from '../store';
+import { store, toggleConfigModal, toggleTheme, toggleCallModal, toggleTtsModal, toggleSidebar } from '../store';
 
 export default {
   name: 'AppHeader',
@@ -73,7 +78,7 @@ export default {
     return { store };
   },
   methods: {
-    onOpenConfig() { openConfigModal(); },
+    onToggleConfig() { toggleConfigModal(); },
     onToggleTheme() { toggleTheme(); },
     onToggleCall() { toggleCallModal(); },
     onToggleTts() { toggleTtsModal(); },

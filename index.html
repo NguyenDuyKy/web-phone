@@ -8,14 +8,27 @@
     <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg">
     <link rel="apple-touch-icon" href="%BASE_URL%favicon.svg">
     <title>Stringee Call Center</title>
-    <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <script type="text/javascript" src="https://cdn.stringee.com/sdk/web/latest/stringee-web-sdk.min.js"></script>
 </head>
 
 <body>
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
+    <script>
+        // Stringee group-button widget chỉ hiển thị trên desktop (≥641px) — match
+        // breakpoint mobile của responsive.css. Mobile có softphone riêng nên không
+        // cần widget nổi che màn hình.
+        if (window.matchMedia('(min-width: 641px)').matches) {
+            var sringeeGroupButtonKey = 'MC9BNGgzSkpZekVNN2NIaWdSaUhnMU9GdFpwVjlqSUIxbHFISjFkRVNwZk14dy9vQ1lnN2ZCOTNYMUgrQUVqNw==';
+            var sringeeButtonCallURL = 'https://static.stringee.com/button-call/lastest/StringeeButtonCall-latest.js?key=MC9BNGgzSkpZekVNN2NIaWdSaUhnMU9GdFpwVjlqSUIxbHFISjFkRVNwZk14dy9vQ1lnN2ZCOTNYMUgrQUVqNw==&version=1.0';
+            var sringeeLiveChatURL = 'https://chat-widget.stringee.com/StringeeXChatBox.js?key=S0h2elNKdDJGY2VjVkxWYWduMUpZMjM0dE1RL3JlYks5TDA4MG4zWkhoVjhUc0FtY2hLWXdnN3VQUDNGWmZ2Tw==&showBot=1&route=&showroute=1';
+            const stringeebgr = document.createElement("script");
+            stringeebgr.type = 'text/javascript';
+            stringeebgr.src = 'https://stringeex-group-button-widget.stringee.com/js/setup.js';
+            document.body.appendChild(stringeebgr);
+        }
+    </script>
 </body>
 
 </html>

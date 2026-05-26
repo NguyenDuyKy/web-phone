@@ -1,6 +1,12 @@
 <template>
-  <div class="modal-overlay" :class="{ active: store.configModal.active }" @click.self="onClose">
-    <div class="config-modal" role="dialog" aria-labelledby="cfgTitle">
+  <Transition name="popover">
+    <div
+      v-if="store.configModal.active"
+      class="config-modal config-popover"
+      ref="popover"
+      role="dialog"
+      aria-labelledby="cfgTitle"
+    >
       <header class="config-modal__head">
         <div class="config-modal__head-left">
           <div class="config-modal__icon">
@@ -9,9 +15,6 @@
           <div class="config-modal__titles">
             <div class="config-modal__eyebrow">LOCAL · PERSISTED</div>
             <h3 class="config-modal__title" id="cfgTitle">Cấu hình mặc định</h3>
-            <p class="config-modal__sub">
-              Lưu trên trình duyệt (localStorage). Tự nạp vào các trường ở lần mở kế tiếp.
-            </p>
           </div>
         </div>
         <button class="config-modal__close" @click="onClose" aria-label="Đóng">
@@ -19,7 +22,7 @@
         </button>
       </header>
 
-      <div class="config-modal__body">
+      <div class="config-modal__body config-popover__body">
         <div class="cfg-field">
           <label for="cfgToken" class="cfg-label">
             <span class="cfg-label__index">01</span>
@@ -91,17 +94,17 @@
 
       <footer class="config-modal__foot">
         <button class="cfg-btn cfg-btn--ghost-danger" @click="onClear" title="Xoá khỏi localStorage">
-          <i class="bi bi-trash3"></i> Xoá lưu trữ
+          <i class="bi bi-trash3"></i>
         </button>
         <div class="config-modal__foot-actions">
           <button class="cfg-btn cfg-btn--ghost" @click="onClose">Huỷ</button>
           <button class="cfg-btn cfg-btn--primary" @click="onSave">
-            <i class="bi bi-check2"></i> Lưu cấu hình
+            <i class="bi bi-check2"></i> Lưu
           </button>
         </div>
       </footer>
     </div>
-  </div>
+  </Transition>
 </template>
 
 <script>
@@ -117,7 +120,44 @@ export default {
   data() {
     return { store };
   },
+  watch: {
+    'store.configModal.active'(active) {
+      if (active) {
+        this.$nextTick(() => this.positionPopover());
+      }
+    },
+  },
+  mounted() {
+    document.addEventListener('mousedown', this.handleOutsideClick);
+    window.addEventListener('resize', this.positionPopover);
+  },
+  unmounted() {
+    document.removeEventListener('mousedown', this.handleOutsideClick);
+    window.removeEventListener('resize', this.positionPopover);
+  },
   methods: {
+    positionPopover() {
+      if (!store.configModal.active) return;
+      const popover = this.$refs.popover;
+      const trigger = document.querySelector('.btn-config-trigger');
+      if (!popover || !trigger) return;
+      const rect = trigger.getBoundingClientRect();
+      const popoverWidth = popover.offsetWidth || 400;
+      const margin = 12;
+      let left = rect.left + rect.width / 2 - popoverWidth / 2;
+      left = Math.max(margin, Math.min(left, window.innerWidth - popoverWidth - margin));
+      popover.style.left = left + 'px';
+      const arrowLeft = (rect.left + rect.width / 2) - left;
+      popover.style.setProperty('--cfg-arrow-left', arrowLeft + 'px');
+    },
+    handleOutsideClick(e) {
+      if (!store.configModal.active) return;
+      const popover = this.$refs.popover;
+      const trigger = document.querySelector('.btn-config-trigger');
+      if (popover && popover.contains(e.target)) return;
+      if (trigger && trigger.contains(e.target)) return;
+      closeConfigModal();
+    },
     onClose() { closeConfigModal(); },
     onSave() { saveDefaultConfig(); },
     onClear() { clearDefaultConfig(); },
