@@ -57,10 +57,10 @@
     color: #1d4ed8;
 }
 
-/* Sidebar drawer backdrop */
+/* Sidebar drawer backdrop — top offset matches header height (+ safe area on iOS) */
 .sidebar-backdrop {
     position: fixed;
-    inset: 68px 0 0 0;
+    inset: calc(68px + env(safe-area-inset-top, 0px)) 0 0 0;
     background:
         radial-gradient(60% 80% at 0% 50%, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.35));
     backdrop-filter: blur(4px);
@@ -130,7 +130,7 @@
     /* Sidebar → fixed drawer sliding from the left */
     .sidebar {
         position: fixed;
-        top: 68px;
+        top: calc(68px + env(safe-area-inset-top, 0px));
         left: 0;
         bottom: 0;
         width: min(320px, 84vw);
@@ -143,6 +143,8 @@
         transition: transform 0.34s var(--ease-out);
         overflow-y: auto;
         overscroll-behavior: contain;
+        /* iOS home indicator safe area when drawer scrolls to bottom */
+        padding-bottom: env(safe-area-inset-bottom, 0);
     }
 
     .sidebar.sidebar--open {
@@ -252,7 +254,9 @@
     }
 
     /* ── POPOVERS → BOTTOM SHEETS ── */
-    /* JS sets inline left on .tts-popover; need !important to win */
+    /* JS sets inline left on .tts-popover; need !important to win.
+       dvh = dynamic viewport height (excludes Android nav bar + iOS URL bar
+       chrome). vh first as fallback for browsers without dvh. */
     .config-modal.call-popover,
     .config-modal.tts-popover {
         position: fixed !important;
@@ -270,10 +274,13 @@
         border-right: none !important;
         border-bottom: none !important;
         max-height: 88vh;
+        max-height: 88dvh;
         overflow-y: auto;
         overscroll-behavior: contain;
         box-shadow: 0 -24px 60px rgba(0, 0, 0, 0.55);
-        padding-bottom: env(safe-area-inset-bottom, 0);
+        /* On Android env() returns 0, so fall back to a 16px buffer so the
+           last action button never sits flush against the system nav bar. */
+        padding-bottom: max(env(safe-area-inset-bottom), 16px);
         z-index: 960;
         transform-origin: bottom center !important;
     }
@@ -326,17 +333,21 @@
     .modal-overlay {
         padding: 0;
         align-items: flex-end;
+        /* Constrain to visible viewport so flex-end aligns above Android nav bar */
+        height: 100vh;
+        height: 100dvh;
     }
 
     .modal-overlay .config-modal {
         width: 100%;
         max-width: 100%;
         max-height: 92vh;
+        max-height: 92dvh;
         overflow-y: auto;
         overscroll-behavior: contain;
         border-radius: 22px 22px 0 0;
         animation: configInMobile 0.34s var(--ease-out);
-        padding-bottom: env(safe-area-inset-bottom, 0);
+        padding-bottom: max(env(safe-area-inset-bottom), 16px);
     }
 
     .modal-overlay .config-modal--sm {
@@ -585,11 +596,11 @@
         font-size: 15px;
     }
 
-    /* Local-video PiP: smaller on mobile */
+    /* Local-video PiP: smaller cap on mobile (long-side ≤ --local-max). */
     .local-video-box {
+        --local-max: 130px;
         top: 12px;
         right: 12px;
-        width: 110px;
         border-radius: 10px;
     }
 
@@ -644,6 +655,7 @@
     .config-modal.tts-popover,
     .modal-overlay .config-modal {
         max-height: 92vh;
+        max-height: 92dvh;
         border-radius: 18px 18px 0 0 !important;
     }
 
@@ -766,9 +778,9 @@
     }
 
     .local-video-box {
+        --local-max: 100px;
         top: 10px;
         right: 10px;
-        width: 96px;
     }
 
     /* Bottom sheets should not eat the whole landscape viewport */
@@ -776,6 +788,7 @@
     .config-modal.tts-popover,
     .modal-overlay .config-modal {
         max-height: 86vh;
+        max-height: 86dvh;
     }
 
     /* Dialpad inside softphone bottom-sheet: lower buttons for landscape */

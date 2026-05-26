@@ -88,6 +88,8 @@ export default {
       store,
       isDragging: false,
       localPos: null,
+      localSize: null,
+      localVideoEl: null,
       dragState: null,
       activePointerId: null,
     };
@@ -98,13 +100,19 @@ export default {
       return n.charAt(0).toUpperCase();
     },
     localBoxStyle() {
-      if (!this.localPos) return null;
-      return {
-        left: this.localPos.x + 'px',
-        top: this.localPos.y + 'px',
-        right: 'auto',
-        bottom: 'auto',
-      };
+      const style = {};
+      if (this.localPos) {
+        style.left = this.localPos.x + 'px';
+        style.top = this.localPos.y + 'px';
+        style.right = 'auto';
+        style.bottom = 'auto';
+      }
+      if (this.localSize) {
+        style.width = this.localSize.width + 'px';
+        style.height = this.localSize.height + 'px';
+        style.aspectRatio = 'auto';
+      }
+      return Object.keys(style).length ? style : null;
     },
   },
   mounted() {
@@ -125,7 +133,14 @@ export default {
         const el = track.attach();
         if (!el) return;
         el.muted = true;
-        if (el.tagName === 'VIDEO') el.setAttribute('playsinline', '');
+        if (el.tagName === 'VIDEO') {
+          el.setAttribute('playsinline', '');
+          this.localVideoEl = el;
+          const apply = () => this.updateLocalSize();
+          if (el.videoWidth && el.videoHeight) apply();
+          else el.addEventListener('loadedmetadata', apply, { once: true });
+          el.addEventListener('resize', apply);
+        }
         const container = this.$refs.localContainer;
         if (!container) return;
         const tag = (el.tagName || '').toLowerCase();
@@ -146,6 +161,9 @@ export default {
       resetVideos: () => {
         if (this.$refs.remoteContainer) this.$refs.remoteContainer.innerHTML = '';
         if (this.$refs.localContainer) this.$refs.localContainer.innerHTML = '';
+        this.localVideoEl = null;
+        this.localSize = null;
+        this.localPos = null;
         if (this.$refs.remoteAudio) {
           try {
             this.$refs.remoteAudio.pause();
@@ -222,6 +240,8 @@ export default {
       this.activePointerId = null;
     },
     clampLocalPos() {
+      // Window resized → re-fit PiP to (possibly new) breakpoint cap, then clamp drag pos.
+      if (this.localVideoEl) this.updateLocalSize();
       if (!this.localPos) return;
       const box = this.$refs.localContainer;
       if (!box) return;
@@ -232,6 +252,21 @@ export default {
       const x = Math.max(0, Math.min(this.localPos.x, containerRect.width - boxRect.width));
       const y = Math.max(0, Math.min(this.localPos.y, containerRect.height - boxRect.height));
       this.localPos = { x, y };
+    },
+    updateLocalSize() {
+      const el = this.localVideoEl;
+      const box = this.$refs.localContainer;
+      if (!el || !box || !el.videoWidth || !el.videoHeight) return;
+      const ratio = el.videoWidth / el.videoHeight;
+      const cssVar = getComputedStyle(box).getPropertyValue('--local-max').trim();
+      const max = parseFloat(cssVar);
+      const cap = Number.isFinite(max) && max > 0 ? max : 200;
+      // Cap the longer side; let the shorter side follow the camera aspect.
+      if (ratio >= 1) {
+        this.localSize = { width: cap, height: Math.round(cap / ratio) };
+      } else {
+        this.localSize = { width: Math.round(cap * ratio), height: cap };
+      }
     },
   },
 };

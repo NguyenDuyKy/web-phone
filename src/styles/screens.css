@@ -615,10 +615,15 @@
 }
 
 .local-video-box {
+    /* --local-max: long-side cap. Set per breakpoint in responsive.css.
+       Once the local video stream's metadata loads, CallView.vue overrides
+       width/height inline so the box matches the camera's true aspect ratio
+       (portrait or landscape). The 16/10 here is only a pre-metadata fallback. */
+    --local-max: 200px;
     position: absolute;
     top: 24px;
     right: 24px;
-    width: 200px;
+    width: var(--local-max);
     height: auto;
     aspect-ratio: 16/10;
     border-radius: 12px;
@@ -671,7 +676,8 @@
 .local-video-box video {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    background: #000;
     pointer-events: none;
 }
 

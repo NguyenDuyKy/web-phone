@@ -5,8 +5,11 @@
 .app {
     display: grid;
     grid-template-columns: 300px 1fr;
-    grid-template-rows: 68px 1fr;
+    /* Header row expands to cover iOS status bar area (viewport-fit=cover);
+       content stays visually 68px tall thanks to header's padding-top. */
+    grid-template-rows: calc(68px + env(safe-area-inset-top, 0px)) 1fr;
     height: 100vh;
+    height: 100dvh;
     gap: 0;
 }
 
@@ -23,7 +26,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 26px;
+    padding: env(safe-area-inset-top, 0) 26px 0;
     z-index: 100;
 }
 
