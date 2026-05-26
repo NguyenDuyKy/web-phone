@@ -50,6 +50,8 @@ export const store = reactive({
 
     theme: 'dark',
 
+    sidebarOpen: false,
+
     logs: [],
 });
 
@@ -166,6 +168,20 @@ export function toggleTheme() {
         'Đã chuyển sang giao diện ' + (store.theme === 'light' ? 'sáng' : 'tối'),
         'info'
     );
+}
+
+export function toggleSidebar() {
+    const willOpen = !store.sidebarOpen;
+    store.sidebarOpen = willOpen;
+    if (willOpen) {
+        // Avoid stacking with bottom-sheet popovers on mobile.
+        store.callModal.active = false;
+        store.ttsModal.active = false;
+    }
+}
+
+export function closeSidebar() {
+    store.sidebarOpen = false;
 }
 
 function loadDefaultConfig() {
@@ -564,6 +580,7 @@ export function toggleSpeaker() {
 
 export function openCallModal() {
     store.callModal.active = true;
+    store.sidebarOpen = false;
 }
 
 export function closeCallModal() {
@@ -572,10 +589,12 @@ export function closeCallModal() {
 
 export function toggleCallModal() {
     store.callModal.active = !store.callModal.active;
+    if (store.callModal.active) store.sidebarOpen = false;
 }
 
 export function openTtsModal() {
     store.ttsModal.active = true;
+    store.sidebarOpen = false;
 }
 
 export function closeTtsModal() {
@@ -584,6 +603,7 @@ export function closeTtsModal() {
 
 export function toggleTtsModal() {
     store.ttsModal.active = !store.ttsModal.active;
+    if (store.ttsModal.active) store.sidebarOpen = false;
 }
 
 export function setTtsVoice(voice) {

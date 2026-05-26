@@ -1,0 +1,685 @@
+/* Popovers — softphone (call) popover, incoming-call view, TTS popover */
+
+/* ─── CALL POPOVER (compact, anchored to main panel right area) ─── */
+.config-modal.call-popover {
+    position: fixed;
+    top: 73px;
+    right: 24px;
+    left: auto;
+    bottom: auto;
+    z-index: 900;
+    width: 320px !important;
+    max-width: calc(100vw - 48px);
+    animation: none !important;
+    transform-origin: top right;
+    margin: 0;
+    overflow: visible;
+}
+
+/* Arrow pointer — border-triangle technique, base flush with popover top.
+   Two stacked triangles: outer (border colour) + inner (fill colour).
+   box-sizing: content-box is required for CSS triangles with width:0 height:0 */
+.config-modal.call-popover::before {
+    content: '';
+    position: absolute;
+    box-sizing: content-box;
+    top: -9px;
+    right: 13px;
+    left: auto;
+    width: 0;
+    height: 0;
+    background: transparent;
+    border-left: 9px solid transparent;
+    border-right: 9px solid transparent;
+    border-bottom: 9px solid rgba(59, 130, 246, 0.32);
+    border-top: none;
+    transform: none;
+    border-radius: 0;
+    z-index: 2;
+}
+
+.config-modal.call-popover::after {
+    content: '';
+    position: absolute;
+    box-sizing: content-box;
+    top: -7px;
+    right: 14px;
+    bottom: auto;
+    left: auto;
+    width: 0;
+    height: 0;
+    background: transparent;
+    background-image: none;
+    background-size: auto;
+    background-position: 0 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid rgb(23, 36, 62);
+    border-top: none;
+    border-radius: 0;
+    mask-image: none;
+    -webkit-mask-image: none;
+    opacity: 1;
+    z-index: 3;
+    pointer-events: none;
+}
+
+[data-theme="light"] .config-modal.call-popover::after {
+    border-bottom-color: rgb(241, 246, 254);
+}
+
+[data-theme="light"] .config-modal.call-popover::before {
+    border-bottom-color: rgba(59, 130, 246, 0.32);
+}
+
+.popover-enter-active,
+.popover-leave-active {
+    transition: opacity 0.22s ease, transform 0.24s var(--ease-out);
+}
+
+.popover-enter-from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.96);
+}
+
+.popover-leave-to {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.97);
+}
+
+/* Compact header */
+.call-popover .config-modal__head {
+    padding: 14px 16px 12px;
+}
+
+.call-popover .config-modal__head-left {
+    gap: 11px;
+}
+
+.call-popover .config-modal__icon {
+    width: 36px;
+    height: 36px;
+    font-size: 15px;
+    border-radius: 10px;
+}
+
+.call-popover .config-modal__title {
+    font-size: 15px;
+}
+
+.call-popover .config-modal__eyebrow {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    margin-bottom: 4px;
+}
+
+.call-popover .config-modal__close {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+}
+
+.call-popover .config-modal__close .bi {
+    font-size: 12px;
+}
+
+/* Compact body */
+.call-modal__body {
+    padding: 12px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.call-modal__status-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.01));
+    border: 1px solid var(--border);
+}
+
+.call-modal__status-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    color: var(--text-muted);
+    letter-spacing: 0.06em;
+}
+
+.call-modal__status-hint .bi {
+    font-size: 11px;
+}
+
+/* Override paddings/margins from old right-panel children */
+.call-modal__body .dial-input-wrap {
+    margin: 0;
+    padding: 10px 40px 10px 14px;
+    border-radius: 11px;
+}
+
+.call-modal__body .dial-input {
+    font-size: 16px;
+    letter-spacing: 0.04em;
+}
+
+.call-modal__body .dial-input::placeholder {
+    font-size: 11px;
+}
+
+.call-modal__body .dial-backspace {
+    width: 26px;
+    height: 26px;
+    right: 9px;
+}
+
+.call-modal__body .dial-backspace .bi {
+    font-size: 12px;
+}
+
+.call-modal__body .dialpad {
+    padding: 0;
+    gap: 6px;
+}
+
+.call-modal__body .dialpad-key {
+    aspect-ratio: 1.4;
+    font-size: 18px;
+    border-radius: 10px;
+}
+
+.call-modal__body .dialpad-key .sub {
+    font-size: 8px;
+    letter-spacing: 0.14em;
+}
+
+.call-modal__body .dial-actions {
+    padding: 0;
+    gap: 8px;
+}
+
+.call-modal__body .btn-call {
+    padding: 10px 12px;
+    font-size: 12px;
+    border-radius: 10px;
+    gap: 6px;
+}
+
+.call-modal__body .btn-call .bi {
+    font-size: 12px;
+}
+
+.btn-call--full {
+    grid-column: 1 / -1;
+    padding: 12px 14px !important;
+    font-size: 13px !important;
+}
+
+/* ─── Incoming Call view inside softphone popover ─── */
+.call-modal__incoming {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 6px 4px 8px;
+    gap: 10px;
+}
+
+.call-modal__incoming-avatar {
+    position: relative;
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-cyan) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 34px;
+    margin: 8px auto 4px;
+    box-shadow:
+        0 10px 28px rgba(59, 130, 246, 0.42),
+        inset 0 2px 0 rgba(255, 255, 255, 0.20),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.20);
+}
+
+.call-modal__incoming-avatar.video {
+    background: linear-gradient(135deg, var(--success) 0%, #06b6d4 100%);
+    box-shadow:
+        0 10px 28px rgba(16, 185, 129, 0.40),
+        inset 0 2px 0 rgba(255, 255, 255, 0.20),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.20);
+}
+
+.call-modal__incoming-avatar::before {
+    content: '';
+    position: absolute;
+    inset: -7px;
+    border-radius: 50%;
+    border: 1px solid rgba(59, 130, 246, 0.32);
+    animation: ring-pulse 1.6s infinite;
+}
+
+.call-modal__incoming-avatar::after {
+    content: '';
+    position: absolute;
+    inset: -16px;
+    border-radius: 50%;
+    border: 1px solid rgba(59, 130, 246, 0.14);
+    animation: ring-pulse 1.6s 0.4s infinite;
+}
+
+.call-modal__incoming-avatar.video::before {
+    border-color: rgba(16, 185, 129, 0.32);
+}
+
+.call-modal__incoming-avatar.video::after {
+    border-color: rgba(16, 185, 129, 0.14);
+}
+
+.call-modal__incoming-name {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.call-modal__incoming-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.call-modal__incoming-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 11px;
+    background: rgba(59, 130, 246, 0.10);
+    color: var(--text-accent);
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border: 1px solid rgba(59, 130, 246, 0.22);
+    margin-top: 2px;
+}
+
+.call-modal__incoming-badge.video {
+    background: rgba(16, 185, 129, 0.10);
+    color: #6ee7b7;
+    border-color: rgba(16, 185, 129, 0.22);
+}
+
+.call-modal__incoming-actions {
+    display: flex;
+    gap: 36px;
+    justify-content: center;
+    margin-top: 10px;
+    padding-bottom: 4px;
+}
+
+.call-modal__incoming-action {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.call-modal__incoming-action span {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    color: var(--text-secondary);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+
+/* ─── TTS popover ─── */
+.config-modal.tts-popover {
+    position: fixed;
+    top: 73px;
+    left: 24px;
+    right: auto;
+    bottom: auto;
+    z-index: 900;
+    width: 380px !important;
+    max-width: calc(100vw - 24px);
+    animation: none !important;
+    transform-origin: top center;
+    margin: 0;
+    overflow: visible;
+}
+
+.config-modal.tts-popover::before {
+    content: '';
+    position: absolute;
+    box-sizing: content-box;
+    top: -9px;
+    left: calc(var(--tts-arrow-left, 30px) - 9px);
+    right: auto;
+    width: 0;
+    height: 0;
+    background: transparent;
+    border-left: 9px solid transparent;
+    border-right: 9px solid transparent;
+    border-bottom: 9px solid rgba(59, 130, 246, 0.32);
+    border-top: none;
+    border-radius: 0;
+    z-index: 2;
+}
+
+.config-modal.tts-popover::after {
+    content: '';
+    position: absolute;
+    box-sizing: content-box;
+    top: -7px;
+    left: calc(var(--tts-arrow-left, 30px) - 8px);
+    right: auto;
+    width: 0;
+    height: 0;
+    background: transparent;
+    background-image: none;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid rgb(23, 36, 62);
+    border-top: none;
+    border-radius: 0;
+    mask-image: none;
+    -webkit-mask-image: none;
+    opacity: 1;
+    z-index: 3;
+    pointer-events: none;
+}
+
+[data-theme="light"] .config-modal.tts-popover::after {
+    border-bottom-color: rgb(241, 246, 254);
+}
+
+.tts-popover .config-modal__head {
+    padding: 14px 16px 12px;
+}
+
+.tts-popover .config-modal__head-left {
+    gap: 11px;
+}
+
+.tts-popover .config-modal__icon {
+    width: 36px;
+    height: 36px;
+    font-size: 15px;
+    border-radius: 10px;
+}
+
+.tts-popover .config-modal__title {
+    font-size: 15px;
+}
+
+.tts-popover .config-modal__eyebrow {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    margin-bottom: 4px;
+}
+
+.tts-popover .config-modal__close {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+}
+
+.tts-popover .config-modal__close .bi {
+    font-size: 12px;
+}
+
+.tts-popover__body {
+    padding: 12px 16px 16px !important;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.tts-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.tts-field__label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+
+.tts-field__counter {
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+}
+
+.tts-textarea {
+    min-height: 96px;
+    max-height: 180px;
+    resize: vertical;
+    line-height: 1.55;
+    font-size: 13px;
+}
+
+/* Voice dropdown (extends call-type-dd) */
+.tts-voice-dd .call-type-dd__trigger {
+    padding: 10px 12px;
+}
+
+.tts-voice-menu {
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.tts-speed {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+}
+
+.tts-speed__btn {
+    padding: 8px 4px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    letter-spacing: 0.02em;
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+.tts-speed__btn:hover {
+    background: rgba(59, 130, 246, 0.14);
+    border-color: rgba(59, 130, 246, 0.45);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+}
+
+.tts-speed__btn.active {
+    background: linear-gradient(180deg, #3b82f6, #2563eb);
+    color: #fff;
+    font-weight: 700;
+    border-color: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow:
+        0 6px 16px rgba(59, 130, 246, 0.55),
+        0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+        inset 0 1px 0 rgba(255, 255, 255, 0.30);
+}
+
+[data-theme="light"] .tts-speed__btn {
+    background: #fff;
+    border-color: rgba(15, 23, 42, 0.14);
+    color: rgba(15, 23, 42, 0.65);
+}
+
+[data-theme="light"] .tts-speed__btn:hover {
+    background: rgba(59, 130, 246, 0.10);
+    border-color: rgba(59, 130, 246, 0.45);
+    color: rgba(15, 23, 42, 0.95);
+}
+
+[data-theme="light"] .tts-speed__btn.active {
+    background: linear-gradient(180deg, #3b82f6, #2563eb);
+    color: #fff;
+    border-color: #1d4ed8;
+    box-shadow:
+        0 6px 16px rgba(59, 130, 246, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.30);
+}
+
+.tts-voice-dd__text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    flex: 1;
+    min-width: 0;
+}
+
+.tts-voice-dd__sub {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    color: var(--text-muted);
+    letter-spacing: 0.10em;
+    margin-top: 2px;
+}
+
+.tts-voice-flag {
+    font-size: 16px;
+    line-height: 1;
+}
+
+.tts-voice-desc {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin: 4px 2px 0;
+    padding: 8px 10px;
+    background: rgba(59, 130, 246, 0.06);
+    border: 1px solid rgba(59, 130, 246, 0.18);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: 11.5px;
+    line-height: 1.45;
+}
+
+.tts-voice-desc .bi {
+    font-size: 12px;
+    color: var(--text-accent);
+    margin-top: 1px;
+    flex-shrink: 0;
+}
+
+.tts-error {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    border-radius: 9px;
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.22);
+    color: #fca5a5;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.tts-error .bi {
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+.tts-player {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 11px 13px;
+    border-radius: 10px;
+    background:
+        linear-gradient(180deg, rgba(59, 130, 246, 0.08), rgba(6, 182, 212, 0.04));
+    border: 1px solid rgba(59, 130, 246, 0.22);
+}
+
+.tts-player__head {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-accent);
+}
+
+.tts-player__head .bi {
+    font-size: 13px;
+}
+
+.tts-audio {
+    width: 100%;
+    height: 36px;
+    border-radius: 6px;
+    outline: none;
+}
+
+.tts-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 2px;
+}
+
+.tts-actions .cfg-btn {
+    padding: 9px 12px;
+    font-size: 12px;
+    border-radius: 9px;
+}
+
+.tts-actions__reset {
+    flex: 0 0 auto;
+}
+
+.tts-actions__generate {
+    flex: 1;
+}
+
+[data-theme="light"] .tts-voice-desc {
+    background: rgba(59, 130, 246, 0.06);
+    border-color: rgba(59, 130, 246, 0.22);
+    color: var(--text-secondary);
+}
+
+[data-theme="light"] .tts-error {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.28);
+    color: #b91c1c;
+}
+
+[data-theme="light"] .tts-player {
+    background: linear-gradient(180deg, rgba(59, 130, 246, 0.08), rgba(6, 182, 212, 0.04));
+    border-color: rgba(59, 130, 246, 0.28);
+}
+

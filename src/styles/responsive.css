@@ -1,0 +1,739 @@
+/* ═════════════════════════════════════════════════════════════
+   RESPONSIVE
+   Breakpoints (mobile-first thinking, layered overrides):
+     ≤1100px  Tablet            — sidebar becomes off-canvas drawer
+     ≤640px   Mobile            — header compresses, popovers → bottom sheets
+     ≤380px   Tiny phone        — extra tightening
+     Landscape phone (≤500px H) — call view height-adapted
+   ════════════════════════════════════════════════════════════ */
+
+/* ─── Responsive helpers (hidden on desktop) ─── */
+.header-menu-toggle,
+.sidebar-backdrop,
+.popover-backdrop {
+    display: none;
+}
+
+.header-menu-toggle {
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    margin-right: 2px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition);
+    flex-shrink: 0;
+}
+
+.header-menu-toggle:hover {
+    background: rgba(59, 130, 246, 0.08);
+    color: var(--text-accent);
+    border-color: rgba(59, 130, 246, 0.30);
+}
+
+.header-menu-toggle.active {
+    background: rgba(59, 130, 246, 0.16);
+    color: #93c5fd;
+    border-color: rgba(59, 130, 246, 0.40);
+    box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.15);
+}
+
+.header-menu-toggle .bi {
+    font-size: 17px;
+    line-height: 1;
+}
+
+[data-theme="light"] .header-menu-toggle {
+    background: rgba(15, 23, 42, 0.03);
+}
+
+[data-theme="light"] .header-menu-toggle.active {
+    background: rgba(59, 130, 246, 0.12);
+    color: #1d4ed8;
+}
+
+/* Sidebar drawer backdrop */
+.sidebar-backdrop {
+    position: fixed;
+    inset: 68px 0 0 0;
+    background:
+        radial-gradient(60% 80% at 0% 50%, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.35));
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 940;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.28s ease;
+}
+
+.sidebar-backdrop.is-open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+[data-theme="light"] .sidebar-backdrop {
+    background:
+        radial-gradient(60% 80% at 0% 50%, rgba(15, 23, 42, 0.40), rgba(15, 23, 42, 0.22));
+}
+
+/* Popover (bottom-sheet) backdrop — mobile only */
+.popover-backdrop {
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(80% 60% at 50% 50%, rgba(8, 12, 22, 0.55), rgba(0, 0, 0, 0.78));
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 880;
+}
+
+[data-theme="light"] .popover-backdrop {
+    background:
+        radial-gradient(80% 60% at 50% 50%, rgba(15, 23, 42, 0.28), rgba(15, 23, 42, 0.48));
+}
+
+.backdrop-fade-enter-active,
+.backdrop-fade-leave-active {
+    transition: opacity 0.22s ease;
+}
+
+.backdrop-fade-enter-from,
+.backdrop-fade-leave-to {
+    opacity: 0;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   ≤1100px — TABLET: sidebar becomes off-canvas drawer
+   ════════════════════════════════════════════════════════════ */
+@media (max-width: 1100px) {
+
+    .app {
+        grid-template-columns: 1fr;
+        grid-template-rows: 68px 1fr;
+    }
+
+    /* Hamburger appears */
+    .header-menu-toggle {
+        display: inline-flex;
+    }
+
+    /* Hide the cosmetic divider in header (cramped space) */
+    .header-divider {
+        display: none;
+    }
+
+    /* Sidebar → fixed drawer sliding from the left */
+    .sidebar {
+        position: fixed;
+        top: 68px;
+        left: 0;
+        bottom: 0;
+        width: min(320px, 84vw);
+        z-index: 950;
+        border-right: 1px solid var(--border);
+        box-shadow:
+            24px 0 60px rgba(0, 0, 0, 0.45),
+            inset -1px 0 0 rgba(255, 255, 255, 0.03);
+        transform: translateX(-105%);
+        transition: transform 0.34s var(--ease-out);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    .sidebar.sidebar--open {
+        transform: translateX(0);
+    }
+
+    /* Inside the drawer, switch from "fill remaining + nested scroll" to a
+       single-scroll surface: the sidebar itself scrolls, log-section takes
+       natural height with its own bounded internal scroll for the log feed.
+       Without this, .log-section { flex:1 } collapses to 0 because the
+       scrollable sidebar has no "remaining space" to allocate. */
+    .sidebar .login-panel-wrap {
+        flex: 0 0 auto;
+    }
+
+    .sidebar .log-section {
+        flex: 0 0 auto;
+        overflow: visible;
+        min-height: 0;
+    }
+
+    .sidebar .log-container {
+        flex: 0 0 auto;
+        max-height: clamp(180px, 42vh, 320px);
+        min-height: 160px;
+        overflow-y: auto;
+    }
+
+    .sidebar-backdrop {
+        display: block;
+    }
+
+    /* Main panel now takes full width */
+    .main-panel {
+        grid-column: 1 / -1;
+    }
+
+    /* Call popover slightly inset from edge */
+    .config-modal.call-popover {
+        right: 16px;
+    }
+}
+
+/* ═════════════════════════════════════════════════════════════
+   ≤640px — MOBILE: header compresses, popovers → bottom sheets
+   ════════════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+
+    /* ── HEADER ── */
+    .header {
+        padding: 0 12px;
+    }
+
+    .header-brand {
+        gap: 8px;
+        min-width: 0;
+        flex: 1;
+    }
+
+    .header-brand-text {
+        display: none;
+    }
+
+    .header-brand .logo {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+    }
+
+    .header-brand .logo .bi {
+        font-size: 16px;
+    }
+
+    /* Server picker rarely changed on mobile — hide to free header space */
+    .server-select {
+        display: none;
+    }
+
+    /* "Cấu hình" button → icon only */
+    .btn-config {
+        padding: 8px 10px;
+        gap: 0;
+        font-size: 0;
+    }
+
+    .btn-config .bi {
+        font-size: 15px;
+        margin: 0;
+    }
+
+    .btn-config--icon {
+        padding: 8px 10px;
+    }
+
+    .header-menu-toggle {
+        width: 36px;
+        height: 36px;
+    }
+
+    .btn-callmodal {
+        width: 42px;
+        height: 42px;
+    }
+
+    .btn-callmodal .bi {
+        font-size: 16px;
+    }
+
+    /* ── POPOVERS → BOTTOM SHEETS ── */
+    /* JS sets inline left on .tts-popover; need !important to win */
+    .config-modal.call-popover,
+    .config-modal.tts-popover {
+        position: fixed !important;
+        inset: auto 0 0 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        top: auto !important;
+        bottom: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        border-radius: 22px 22px 0 0 !important;
+        border-top: 1px solid rgba(59, 130, 246, 0.28) !important;
+        border-left: none !important;
+        border-right: none !important;
+        border-bottom: none !important;
+        max-height: 88vh;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        box-shadow: 0 -24px 60px rgba(0, 0, 0, 0.55);
+        padding-bottom: env(safe-area-inset-bottom, 0);
+        z-index: 960;
+        transform-origin: bottom center !important;
+    }
+
+    /* Kill the arrow pointers — no longer pointing at any trigger */
+    .config-modal.call-popover::before,
+    .config-modal.call-popover::after,
+    .config-modal.tts-popover::before,
+    .config-modal.tts-popover::after {
+        display: none !important;
+    }
+
+    /* Drag-handle pill on the bottom-sheet head */
+    .config-modal.call-popover .config-modal__head,
+    .config-modal.tts-popover .config-modal__head {
+        padding-top: 18px;
+    }
+
+    .config-modal.call-popover .config-modal__head::after,
+    .config-modal.tts-popover .config-modal__head::after {
+        content: '';
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 42px;
+        height: 4px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.22);
+        pointer-events: none;
+    }
+
+    [data-theme="light"] .config-modal.call-popover .config-modal__head::after,
+    [data-theme="light"] .config-modal.tts-popover .config-modal__head::after {
+        background: rgba(15, 23, 42, 0.22);
+    }
+
+    /* Override popover Vue transition for slide-up-from-bottom */
+    .popover-enter-from {
+        opacity: 0;
+        transform: translateY(100%) scale(1) !important;
+    }
+
+    .popover-leave-to {
+        opacity: 0;
+        transform: translateY(30%) scale(1) !important;
+    }
+
+    /* ── FULL-OVERLAY MODALS (Config / Info / Error) → bottom sheets ── */
+    .modal-overlay {
+        padding: 0;
+        align-items: flex-end;
+    }
+
+    .modal-overlay .config-modal {
+        width: 100%;
+        max-width: 100%;
+        max-height: 92vh;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        border-radius: 22px 22px 0 0;
+        animation: configInMobile 0.34s var(--ease-out);
+        padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+
+    .modal-overlay .config-modal--sm {
+        width: 100%;
+    }
+
+    @keyframes configInMobile {
+        from {
+            opacity: 0;
+            transform: translateY(100%);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .config-modal__head {
+        padding: 22px 18px 16px;
+        gap: 12px;
+    }
+
+    .config-modal__head-left {
+        gap: 12px;
+    }
+
+    .config-modal__icon {
+        width: 38px;
+        height: 38px;
+        font-size: 15px;
+        border-radius: 10px;
+    }
+
+    .config-modal__title {
+        font-size: 17px;
+    }
+
+    .config-modal__sub {
+        font-size: 12px;
+    }
+
+    .config-modal__body {
+        padding: 18px 18px 8px;
+        gap: 14px;
+    }
+
+    .config-modal__foot {
+        padding: 14px 18px 18px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .config-modal__foot-actions {
+        flex: 1;
+        justify-content: flex-end;
+    }
+
+    /* ConfigModal field row → stack on mobile */
+    .cfg-field-row {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    /* Inputs slightly larger touch target */
+    .cfg-input {
+        padding: 13px 14px;
+        font-size: 14px;
+    }
+
+    /* ── DIALPAD in softphone (slightly larger touch targets) ── */
+    .call-popover .config-modal__head,
+    .tts-popover .config-modal__head {
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    .call-modal__body {
+        padding: 14px 18px 18px;
+        gap: 12px;
+    }
+
+    .call-modal__body .dialpad {
+        gap: 8px;
+    }
+
+    .call-modal__body .dialpad-key {
+        aspect-ratio: 1.25;
+        font-size: 21px;
+        border-radius: 12px;
+    }
+
+    .call-modal__body .dialpad-key .sub {
+        font-size: 9px;
+    }
+
+    .call-modal__body .dial-input {
+        font-size: 18px;
+    }
+
+    .call-modal__body .btn-call--full {
+        padding: 14px !important;
+        font-size: 14px !important;
+    }
+
+    /* Incoming call section: more breathing room */
+    .call-modal__incoming {
+        padding: 12px 4px 14px;
+        gap: 12px;
+    }
+
+    .call-modal__incoming-avatar {
+        width: 96px;
+        height: 96px;
+        font-size: 38px;
+    }
+
+    .call-modal__incoming-name {
+        font-size: 20px;
+    }
+
+    .call-modal__incoming-actions {
+        gap: 44px;
+        margin-top: 14px;
+        padding-bottom: 8px;
+    }
+
+    .call-action-btn.answer,
+    .call-action-btn.hangup {
+        width: 64px;
+        height: 64px;
+    }
+
+    /* ── TTS modal tweaks for bottom-sheet ── */
+    .tts-popover__body {
+        padding: 14px 18px 20px !important;
+        gap: 14px;
+    }
+
+    .tts-speed {
+        flex-wrap: wrap;
+    }
+
+    .tts-speed__btn {
+        flex: 1 0 calc(33.333% - 6px);
+    }
+
+    .tts-textarea {
+        min-height: 92px;
+    }
+
+    /* ── IDLE STATE: tighter typography ── */
+    .idle-state {
+        padding: 0 22px;
+    }
+
+    .idle-state .phone-icon {
+        width: 96px;
+        height: 96px;
+        margin-bottom: 22px;
+    }
+
+    .idle-state .phone-icon .bi {
+        font-size: 36px;
+    }
+
+    .idle-state-eyebrow {
+        font-size: 9.5px;
+        letter-spacing: 0.20em;
+    }
+
+    .idle-state h2 {
+        font-size: 22px;
+    }
+
+    .idle-state p {
+        font-size: 13px;
+    }
+
+    /* ── ACTIVE CALL: smaller avatar, smaller timer, smaller PiP ── */
+    .caller-avatar-lg {
+        width: 108px;
+        height: 108px;
+        font-size: 38px;
+        margin-bottom: 18px;
+    }
+
+    .caller-name {
+        font-size: 22px;
+    }
+
+    .call-timer {
+        font-size: 34px;
+        margin-bottom: 26px;
+    }
+
+    .call-actions {
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 0 16px;
+    }
+
+    /* Video call overlay text positioning */
+    .video-call .caller-name {
+        top: 18px;
+        font-size: 18px;
+    }
+
+    .video-call .call-status-text {
+        top: 50px;
+    }
+
+    .video-call .call-timer {
+        top: 78px;
+        font-size: 22px;
+        margin-bottom: 0;
+    }
+
+    .video-call .call-actions {
+        bottom: max(18px, env(safe-area-inset-bottom));
+        padding: 10px 16px;
+        gap: 10px;
+    }
+
+    /* Local-video PiP: smaller on mobile */
+    .local-video-box {
+        top: 12px;
+        right: 12px;
+        width: 110px;
+        border-radius: 10px;
+    }
+
+    /* Login panel inside drawer: tighter padding for narrower width */
+    .login-panel {
+        padding: 4px 18px 18px;
+    }
+
+    .panel-head {
+        padding: 20px 18px 12px;
+    }
+
+    .log-container {
+        margin: 0 12px 12px;
+    }
+}
+
+/* ═════════════════════════════════════════════════════════════
+   ≤380px — TINY PHONE (iPhone SE class)
+   ════════════════════════════════════════════════════════════ */
+@media (max-width: 380px) {
+
+    .header {
+        padding: 0 10px;
+    }
+
+    .header-brand {
+        gap: 6px;
+    }
+
+    .header-brand .logo {
+        width: 32px;
+        height: 32px;
+    }
+
+    .btn-config,
+    .btn-config--icon {
+        padding: 7px 9px;
+    }
+
+    .header-menu-toggle {
+        width: 34px;
+        height: 34px;
+    }
+
+    .btn-callmodal {
+        width: 40px;
+        height: 40px;
+    }
+
+    .config-modal.call-popover,
+    .config-modal.tts-popover,
+    .modal-overlay .config-modal {
+        max-height: 92vh;
+        border-radius: 18px 18px 0 0 !important;
+    }
+
+    .call-modal__body .dialpad-key {
+        font-size: 19px;
+    }
+
+    .call-modal__incoming-avatar {
+        width: 86px;
+        height: 86px;
+        font-size: 34px;
+    }
+
+    .caller-avatar-lg {
+        width: 92px;
+        height: 92px;
+        font-size: 32px;
+    }
+
+    .call-timer {
+        font-size: 30px;
+    }
+
+    .call-action-btn {
+        width: 52px;
+        height: 52px;
+    }
+
+    .idle-state h2 {
+        font-size: 20px;
+    }
+
+    .idle-state .phone-icon {
+        width: 86px;
+        height: 86px;
+    }
+
+    .idle-state .phone-icon .bi {
+        font-size: 32px;
+    }
+}
+
+/* ═════════════════════════════════════════════════════════════
+   LANDSCAPE PHONE — height-constrained call view
+   ════════════════════════════════════════════════════════════ */
+@media (orientation: landscape) and (max-height: 500px) {
+
+    .calling-state {
+        padding: 10px 14px;
+    }
+
+    .caller-avatar-lg {
+        width: 76px;
+        height: 76px;
+        font-size: 28px;
+        margin-bottom: 8px;
+    }
+
+    .caller-name {
+        font-size: 18px;
+        margin-bottom: 4px;
+    }
+
+    .call-status-text {
+        margin-bottom: 8px;
+        font-size: 10px;
+    }
+
+    .call-timer {
+        font-size: 24px;
+        margin-bottom: 14px;
+    }
+
+    .call-action-btn {
+        width: 46px;
+        height: 46px;
+    }
+
+    .video-call .caller-name {
+        top: 12px;
+        font-size: 16px;
+    }
+
+    .video-call .call-status-text {
+        top: 38px;
+    }
+
+    .video-call .call-timer {
+        top: 56px;
+        font-size: 20px;
+    }
+
+    .video-call .call-actions {
+        bottom: 12px;
+        padding: 8px 14px;
+    }
+
+    .local-video-box {
+        top: 10px;
+        right: 10px;
+        width: 96px;
+    }
+
+    /* Bottom sheets should not eat the whole landscape viewport */
+    .config-modal.call-popover,
+    .config-modal.tts-popover,
+    .modal-overlay .config-modal {
+        max-height: 86vh;
+    }
+
+    /* Dialpad inside softphone bottom-sheet: lower buttons for landscape */
+    .call-modal__body .dialpad-key {
+        aspect-ratio: 1.6;
+    }
+}
+

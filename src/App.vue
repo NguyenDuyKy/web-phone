@@ -1,11 +1,18 @@
 <template>
-  <div class="app">
+  <div class="app" :class="{ 'app--drawer-open': store.sidebarOpen }">
     <AppHeader />
 
-    <aside class="sidebar">
+    <aside class="sidebar" :class="{ 'sidebar--open': store.sidebarOpen }">
       <LoginPanel />
       <LogPanel />
     </aside>
+
+    <div
+      class="sidebar-backdrop"
+      :class="{ 'is-open': store.sidebarOpen }"
+      @click="onCloseSidebar"
+      aria-hidden="true"
+    ></div>
 
     <main class="main-panel">
       <div v-show="store.callState === 'idle'" class="idle-state">
@@ -25,6 +32,23 @@
       <source src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" type="audio/mpeg">
     </audio>
 
+    <Transition name="backdrop-fade">
+      <div
+        v-if="store.callModal.active && !store.hasIncoming"
+        class="popover-backdrop popover-backdrop--call"
+        @click="onCloseCallModal"
+        aria-hidden="true"
+      ></div>
+    </Transition>
+    <Transition name="backdrop-fade">
+      <div
+        v-if="store.ttsModal.active"
+        class="popover-backdrop popover-backdrop--tts"
+        @click="onCloseTtsModal"
+        aria-hidden="true"
+      ></div>
+    </Transition>
+
     <ErrorModal />
     <InfoModal />
     <ConfigModal />
@@ -34,7 +58,7 @@
 </template>
 
 <script>
-import { store, addLog, initEnv, makeCall, hangupCall } from './store';
+import { store, addLog, initEnv, makeCall, hangupCall, closeSidebar, closeCallModal, closeTtsModal } from './store';
 import AppHeader from './components/AppHeader.vue';
 import LoginPanel from './components/LoginPanel.vue';
 import LogPanel from './components/LogPanel.vue';
@@ -77,10 +101,17 @@ export default {
         e.preventDefault();
         makeCall();
       }
-      if (e.key === 'Escape' && store.currentCall) {
-        hangupCall();
+      if (e.key === 'Escape') {
+        if (store.sidebarOpen) {
+          closeSidebar();
+          return;
+        }
+        if (store.currentCall) hangupCall();
       }
     },
+    onCloseSidebar() { closeSidebar(); },
+    onCloseCallModal() { closeCallModal(); },
+    onCloseTtsModal() { closeTtsModal(); },
   },
 };
 </script>

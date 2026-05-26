@@ -1,6 +1,16 @@
 <template>
   <header class="header">
     <div class="header-brand">
+      <button
+        class="header-menu-toggle"
+        :class="{ active: store.sidebarOpen }"
+        @click.stop="onToggleSidebar"
+        :aria-label="store.sidebarOpen ? 'Đóng menu' : 'Mở menu'"
+        :aria-expanded="store.sidebarOpen"
+        title="Menu"
+      >
+        <i :class="store.sidebarOpen ? 'bi bi-x-lg' : 'bi bi-list'"></i>
+      </button>
       <div class="logo"><i class="bi bi-headset"></i></div>
       <div class="header-brand-text">
         <span class="header-brand-eyebrow">STRINGEE · WEBPHONE</span>
@@ -55,7 +65,7 @@
 </template>
 
 <script>
-import { store, openConfigModal, toggleTheme, toggleCallModal, toggleTtsModal } from '../store';
+import { store, openConfigModal, toggleTheme, toggleCallModal, toggleTtsModal, toggleSidebar } from '../store';
 
 export default {
   name: 'AppHeader',
@@ -67,6 +77,7 @@ export default {
     onToggleTheme() { toggleTheme(); },
     onToggleCall() { toggleCallModal(); },
     onToggleTts() { toggleTtsModal(); },
+    onToggleSidebar() { toggleSidebar(); },
   },
 };
 </script>

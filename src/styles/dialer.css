@@ -1,0 +1,258 @@
+/* Dialer — dial input, dialpad grid, call buttons, DTMF section */
+
+/* ═════════════════════════════════════════════════════════════
+   RIGHT PANEL — DIALPAD
+   ════════════════════════════════════════════════════════════ */
+.right-panel .panel-head {
+    padding: 22px 22px 14px;
+}
+
+.dial-input-wrap {
+    margin: 0 22px;
+    position: relative;
+    background:
+        linear-gradient(180deg, rgba(8, 12, 22, 0.85), rgba(8, 12, 22, 0.5));
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 44px 14px 18px;
+    display: flex;
+    align-items: center;
+    transition: var(--transition);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.dial-input-wrap:focus-within {
+    border-color: var(--border-focus);
+    box-shadow:
+        0 0 0 3px rgba(59, 130, 246, 0.14),
+        inset 0 0 12px rgba(59, 130, 246, 0.05);
+    background: rgba(8, 12, 22, 1);
+}
+
+.dial-input {
+    width: 100%;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 19px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    outline: none;
+    text-align: center;
+}
+
+.dial-input::placeholder {
+    color: var(--text-muted);
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    font-weight: 400;
+    font-family: var(--font-sans);
+}
+
+.dial-backspace {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.dial-backspace:hover {
+    background: rgba(239, 68, 68, 0.10);
+    color: var(--danger);
+    border-color: rgba(239, 68, 68, 0.25);
+}
+
+.dial-backspace .bi {
+    font-size: 14px;
+}
+
+/* ─── DIALPAD GRID ─── */
+.dialpad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 16px 22px;
+}
+
+.dialpad-key {
+    aspect-ratio: 1.4;
+    border-radius: 12px;
+    background:
+        linear-gradient(180deg, rgba(20, 28, 46, 0.95) 0%, rgba(13, 21, 37, 0.95) 100%);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: 22px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        0 1px 0 rgba(0, 0, 0, 0.2);
+}
+
+.dialpad-key::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(59, 130, 246, 0.18) 0%, transparent 65%);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.dialpad-key:hover {
+    border-color: var(--border-accent);
+    transform: translateY(-1px);
+    color: var(--text-accent);
+}
+
+.dialpad-key:hover::before {
+    opacity: 1;
+}
+
+.dialpad-key:active {
+    transform: translateY(0) scale(0.97);
+    background: linear-gradient(180deg, rgba(59, 130, 246, 0.20), rgba(59, 130, 246, 0.08));
+    color: #fff;
+}
+
+.dialpad-key .sub {
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 0.18em;
+    margin-top: 2px;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+/* ─── CALL BUTTONS ─── */
+.dial-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 4px 22px 18px;
+}
+
+.btn-call {
+    padding: 13px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    font-size: 13px;
+    font-weight: 600;
+    font-family: var(--font-sans);
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-call::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+    transition: left 0.6s ease;
+}
+
+.btn-call:hover:not(:disabled)::after {
+    left: 100%;
+}
+
+.btn-call-voice {
+    background: linear-gradient(180deg, var(--success), #047857);
+    box-shadow:
+        0 6px 18px rgba(16, 185, 129, 0.40),
+        inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.btn-call-voice:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 26px rgba(16, 185, 129, 0.55);
+}
+
+.btn-call-video {
+    background: linear-gradient(180deg, var(--accent), var(--accent-hover));
+    box-shadow:
+        0 6px 18px rgba(59, 130, 246, 0.40),
+        inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.btn-call-video:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 26px rgba(59, 130, 246, 0.55);
+}
+
+.btn-call:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+/* ─── DTMF SECTION ─── */
+.dtmf-section {
+    padding: 16px 0 8px;
+    border-top: 1px solid var(--border);
+    margin: 0 22px 14px;
+}
+
+.dtmf-section h4 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.24em;
+    color: var(--text-accent);
+    opacity: 0.75;
+    margin-bottom: 10px;
+}
+
+.dtmf-section h4::before,
+.dtmf-section h4::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-strong), transparent);
+}
+
+.dtmf-section .dialpad {
+    padding: 0;
+    gap: 6px;
+}
+
+.dtmf-section .dialpad-key {
+    aspect-ratio: 1.5;
+    font-size: 18px;
+}
+
