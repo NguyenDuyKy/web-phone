@@ -361,11 +361,32 @@
     color: var(--text-primary);
 }
 
+/* Caller info anchored top-left as readable pills.
+   Background is a dark glass card so text stays legible over arbitrary
+   video content (bright walls, complex scenes) regardless of theme. */
 .video-call .caller-name {
     position: absolute;
-    top: 38px;
+    top: 20px;
+    left: 20px;
+    right: auto;
+    margin: 0;
+    padding: 7px 14px;
+    font-size: 17px;
     color: #fff;
-    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+    background: rgba(8, 12, 22, 0.62);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 999px;
+    box-shadow:
+        0 6px 18px rgba(0, 0, 0, 0.40),
+        inset 0 1px 0 rgba(255, 255, 255, 0.10);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
+    white-space: nowrap;
+    max-width: calc(100% - 40px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    z-index: 6;
 }
 
 .call-status-text {
@@ -398,11 +419,23 @@
 
 .video-call .call-status-text {
     position: absolute;
-    top: 78px;
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(20px);
-    border-color: rgba(255, 255, 255, 0.15);
+    top: 64px;
+    left: 20px;
+    margin: 0;
+    background: rgba(8, 12, 22, 0.62);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border-color: rgba(255, 255, 255, 0.18);
     color: #fff;
+    box-shadow:
+        0 6px 18px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    z-index: 6;
+}
+
+.video-call .call-status-text::before {
+    background: #4ade80;
+    box-shadow: 0 0 7px #4ade80;
 }
 
 .call-timer {
@@ -419,9 +452,24 @@
 
 .video-call .call-timer {
     position: absolute;
-    top: 108px;
+    top: 102px;
+    left: 20px;
+    margin: 0;
+    padding: 6px 14px;
     color: #fff;
-    font-size: 28px;
+    font-size: 26px;
+    font-variant-numeric: tabular-nums;
+    background: rgba(8, 12, 22, 0.62);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 10px;
+    box-shadow:
+        0 6px 18px rgba(0, 0, 0, 0.40),
+        inset 0 1px 0 rgba(255, 255, 255, 0.10);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
+    letter-spacing: 0.06em;
+    z-index: 6;
 }
 
 .call-actions {
@@ -577,15 +625,53 @@
     overflow: hidden;
     z-index: 10;
     background: #161616;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
     box-shadow:
         0 10px 30px rgba(0, 0, 0, 0.6),
         0 0 0 1px rgba(255, 255, 255, 0.10),
         inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.local-video-box::after {
+    content: '';
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 28px;
+    height: 3px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.45);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.local-video-box:hover::after,
+.local-video-box.dragging::after {
+    opacity: 1;
+}
+
+.local-video-box.dragging {
+    cursor: grabbing;
+    z-index: 20;
+    transform: scale(1.03);
+    transition: none;
+    box-shadow:
+        0 18px 44px rgba(0, 0, 0, 0.75),
+        0 0 0 2px rgba(59, 130, 246, 0.55),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.14);
 }
 
 .local-video-box video {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    pointer-events: none;
 }
 

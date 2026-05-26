@@ -5,7 +5,14 @@
   >
     <div class="video-container" :class="{ active: store.isVideoCall }">
       <div ref="remoteContainer" class="video-box remote-video-box"></div>
-      <div ref="localContainer" class="video-box local-video-box"></div>
+      <div
+        ref="localContainer"
+        class="video-box local-video-box"
+        :class="{ dragging: isDragging }"
+        :style="localBoxStyle"
+        @pointerdown="onLocalPointerDown"
+        title="Kéo để di chuyển"
+      ></div>
     </div>
 
     <!-- Dedicated audio sink for voice calls (StringeeCall addremotestream).
@@ -72,18 +79,36 @@ import {
   toggleVideo,
 } from '../store';
 
+const DRAG_THRESHOLD_PX = 4;
+
 export default {
   name: 'CallView',
   data() {
-    return { store };
+    return {
+      store,
+      isDragging: false,
+      localPos: null,
+      dragState: null,
+      activePointerId: null,
+    };
   },
   computed: {
     avatarChar() {
       const n = store.callerNumber || '?';
       return n.charAt(0).toUpperCase();
     },
+    localBoxStyle() {
+      if (!this.localPos) return null;
+      return {
+        left: this.localPos.x + 'px',
+        top: this.localPos.y + 'px',
+        right: 'auto',
+        bottom: 'auto',
+      };
+    },
   },
   mounted() {
+    window.addEventListener('resize', this.clampLocalPos);
     registerVideoHandlers({
       onAddRemoteTrack: (track) => {
         const el = track.attach();
@@ -131,6 +156,7 @@ export default {
     });
   },
   unmounted() {
+    window.removeEventListener('resize', this.clampLocalPos);
     clearVideoHandlers();
   },
   methods: {
@@ -140,6 +166,73 @@ export default {
     onInfo() { openInfoModal(); },
     onToggleVideo() { toggleVideo(); },
     onHangup() { hangupCall(); },
+    onLocalPointerDown(e) {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      const box = this.$refs.localContainer;
+      if (!box) return;
+      const container = box.parentElement;
+      if (!container) return;
+      const containerRect = container.getBoundingClientRect();
+      const boxRect = box.getBoundingClientRect();
+      this.dragState = {
+        startX: e.clientX,
+        startY: e.clientY,
+        offsetX: e.clientX - boxRect.left,
+        offsetY: e.clientY - boxRect.top,
+        containerLeft: containerRect.left,
+        containerTop: containerRect.top,
+        containerWidth: containerRect.width,
+        containerHeight: containerRect.height,
+        boxWidth: boxRect.width,
+        boxHeight: boxRect.height,
+      };
+      this.activePointerId = e.pointerId;
+      try { box.setPointerCapture(e.pointerId); } catch (err) { /* noop */ }
+      box.addEventListener('pointermove', this.onLocalPointerMove);
+      box.addEventListener('pointerup', this.onLocalPointerEnd);
+      box.addEventListener('pointercancel', this.onLocalPointerEnd);
+      e.preventDefault();
+    },
+    onLocalPointerMove(e) {
+      if (!this.dragState || e.pointerId !== this.activePointerId) return;
+      const d = this.dragState;
+      const dx = e.clientX - d.startX;
+      const dy = e.clientY - d.startY;
+      if (!this.isDragging) {
+        if (Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
+        this.isDragging = true;
+      }
+      let x = e.clientX - d.offsetX - d.containerLeft;
+      let y = e.clientY - d.offsetY - d.containerTop;
+      x = Math.max(0, Math.min(x, d.containerWidth - d.boxWidth));
+      y = Math.max(0, Math.min(y, d.containerHeight - d.boxHeight));
+      this.localPos = { x, y };
+    },
+    onLocalPointerEnd(e) {
+      if (e && e.pointerId !== this.activePointerId) return;
+      const box = this.$refs.localContainer;
+      if (box) {
+        try { box.releasePointerCapture(this.activePointerId); } catch (err) { /* noop */ }
+        box.removeEventListener('pointermove', this.onLocalPointerMove);
+        box.removeEventListener('pointerup', this.onLocalPointerEnd);
+        box.removeEventListener('pointercancel', this.onLocalPointerEnd);
+      }
+      this.dragState = null;
+      this.isDragging = false;
+      this.activePointerId = null;
+    },
+    clampLocalPos() {
+      if (!this.localPos) return;
+      const box = this.$refs.localContainer;
+      if (!box) return;
+      const container = box.parentElement;
+      if (!container) return;
+      const containerRect = container.getBoundingClientRect();
+      const boxRect = box.getBoundingClientRect();
+      const x = Math.max(0, Math.min(this.localPos.x, containerRect.width - boxRect.width));
+      const y = Math.max(0, Math.min(this.localPos.y, containerRect.height - boxRect.height));
+      this.localPos = { x, y };
+    },
   },
 };
 </script>

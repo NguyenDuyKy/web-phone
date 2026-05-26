@@ -533,33 +533,56 @@
         margin-bottom: 26px;
     }
 
+    /* Single horizontal row — never wrap. All 6 buttons must fit on one line. */
     .call-actions {
-        gap: 12px;
-        flex-wrap: wrap;
+        gap: 10px;
+        flex-wrap: nowrap;
         justify-content: center;
-        padding: 0 16px;
+        padding: 0 12px;
+        max-width: 100%;
     }
 
-    /* Video call overlay text positioning */
+    .call-action-btn {
+        width: 46px;
+        height: 46px;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+
+    /* Video call overlay — anchored top-left, tighter spacing */
     .video-call .caller-name {
-        top: 18px;
-        font-size: 18px;
+        top: 14px;
+        left: 14px;
+        padding: 5px 12px;
+        font-size: 15px;
+        max-width: calc(100% - 24px);
     }
 
     .video-call .call-status-text {
         top: 50px;
+        left: 14px;
     }
 
     .video-call .call-timer {
-        top: 78px;
-        font-size: 22px;
+        top: 84px;
+        left: 14px;
+        font-size: 20px;
+        padding: 4px 11px;
         margin-bottom: 0;
     }
 
+    /* Floating bar over video — tighter padding so 6 buttons fit on narrow phones */
     .video-call .call-actions {
-        bottom: max(18px, env(safe-area-inset-bottom));
-        padding: 10px 16px;
-        gap: 10px;
+        bottom: max(16px, env(safe-area-inset-bottom));
+        padding: 8px 12px;
+        gap: 8px;
+        max-width: calc(100vw - 16px);
+    }
+
+    .video-call .call-action-btn {
+        width: 42px;
+        height: 42px;
+        font-size: 15px;
     }
 
     /* Local-video PiP: smaller on mobile */
@@ -644,9 +667,28 @@
         font-size: 30px;
     }
 
+    /* Even tighter row on ≤380px so 6 buttons still fit */
+    .call-actions {
+        gap: 7px;
+        padding: 0 8px;
+    }
+
     .call-action-btn {
-        width: 52px;
-        height: 52px;
+        width: 42px;
+        height: 42px;
+        font-size: 15px;
+    }
+
+    .video-call .call-actions {
+        gap: 6px;
+        padding: 7px 10px;
+        max-width: calc(100vw - 12px);
+    }
+
+    .video-call .call-action-btn {
+        width: 38px;
+        height: 38px;
+        font-size: 14px;
     }
 
     .idle-state h2 {
@@ -700,17 +742,22 @@
     }
 
     .video-call .caller-name {
-        top: 12px;
-        font-size: 16px;
+        top: 10px;
+        left: 10px;
+        padding: 4px 10px;
+        font-size: 14px;
     }
 
     .video-call .call-status-text {
-        top: 38px;
+        top: 40px;
+        left: 10px;
     }
 
     .video-call .call-timer {
-        top: 56px;
-        font-size: 20px;
+        top: 70px;
+        left: 10px;
+        font-size: 18px;
+        padding: 3px 10px;
     }
 
     .video-call .call-actions {
