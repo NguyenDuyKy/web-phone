@@ -40,25 +40,16 @@
         aria-hidden="true"
       ></div>
     </Transition>
-    <Transition name="backdrop-fade">
-      <div
-        v-if="store.ttsModal.active"
-        class="popover-backdrop popover-backdrop--tts"
-        @click="onCloseTtsModal"
-        aria-hidden="true"
-      ></div>
-    </Transition>
 
     <ErrorModal />
     <InfoModal />
     <ConfigModal />
     <CallModal />
-    <TtsModal />
   </div>
 </template>
 
 <script>
-import { store, addLog, initEnv, makeCall, hangupCall, closeSidebar, closeCallModal, closeTtsModal } from './store';
+import { store, addLog, initEnv, makeCall, hangupCall, closeSidebar, closeCallModal } from './store';
 import AppHeader from './components/AppHeader.vue';
 import LoginPanel from './components/LoginPanel.vue';
 import LogPanel from './components/LogPanel.vue';
@@ -67,7 +58,6 @@ import ErrorModal from './components/ErrorModal.vue';
 import InfoModal from './components/InfoModal.vue';
 import ConfigModal from './components/ConfigModal.vue';
 import CallModal from './components/CallModal.vue';
-import TtsModal from './components/TtsModal.vue';
 
 export default {
   name: 'App',
@@ -80,7 +70,6 @@ export default {
     InfoModal,
     ConfigModal,
     CallModal,
-    TtsModal,
   },
   data() {
     return { store };
@@ -111,7 +100,6 @@ export default {
     },
     onCloseSidebar() { closeSidebar(); },
     onCloseCallModal() { closeCallModal(); },
-    onCloseTtsModal() { closeTtsModal(); },
   },
 };
 </script>

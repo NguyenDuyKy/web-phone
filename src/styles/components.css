@@ -361,22 +361,6 @@
     font-family: var(--font-mono);
 }
 
-.cfg-hint {
-    margin: 6px 2px 0;
-    font-size: 11.5px;
-    color: var(--text-muted);
-    line-height: 1.5;
-}
-
-.cfg-hint code {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    padding: 1px 5px;
-    border-radius: 4px;
-    background: rgba(59, 130, 246, 0.10);
-    color: var(--text-accent);
-}
-
 .cfg-input {
     width: 100%;
     background: rgba(8, 12, 22, 0.7);

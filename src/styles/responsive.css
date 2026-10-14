@@ -254,11 +254,10 @@
     }
 
     /* ── POPOVERS → BOTTOM SHEETS ── */
-    /* JS sets inline left on .tts-popover / .config-popover; need !important to win.
+    /* JS sets inline left on .config-popover; need !important to win.
        dvh = dynamic viewport height (excludes Android nav bar + iOS URL bar
        chrome). vh first as fallback for browsers without dvh. */
     .config-modal.call-popover,
-    .config-modal.tts-popover,
     .config-modal.config-popover {
         position: fixed !important;
         inset: auto 0 0 0 !important;
@@ -289,8 +288,6 @@
     /* Kill the arrow pointers — no longer pointing at any trigger */
     .config-modal.call-popover::before,
     .config-modal.call-popover::after,
-    .config-modal.tts-popover::before,
-    .config-modal.tts-popover::after,
     .config-modal.config-popover::before,
     .config-modal.config-popover::after {
         display: none !important;
@@ -298,13 +295,11 @@
 
     /* Drag-handle pill on the bottom-sheet head */
     .config-modal.call-popover .config-modal__head,
-    .config-modal.tts-popover .config-modal__head,
     .config-modal.config-popover .config-modal__head {
         padding-top: 18px;
     }
 
     .config-modal.call-popover .config-modal__head::after,
-    .config-modal.tts-popover .config-modal__head::after,
     .config-modal.config-popover .config-modal__head::after {
         content: '';
         position: absolute;
@@ -319,7 +314,6 @@
     }
 
     [data-theme="light"] .config-modal.call-popover .config-modal__head::after,
-    [data-theme="light"] .config-modal.tts-popover .config-modal__head::after,
     [data-theme="light"] .config-modal.config-popover .config-modal__head::after {
         background: rgba(15, 23, 42, 0.22);
     }
@@ -426,7 +420,6 @@
 
     /* ── DIALPAD in softphone (slightly larger touch targets) ── */
     .call-popover .config-modal__head,
-    .tts-popover .config-modal__head,
     .config-popover .config-modal__head {
         padding-left: 18px;
         padding-right: 18px;
@@ -501,24 +494,6 @@
     .call-action-btn.hangup {
         width: 64px;
         height: 64px;
-    }
-
-    /* ── TTS modal tweaks for bottom-sheet ── */
-    .tts-popover__body {
-        padding: 14px 18px 20px !important;
-        gap: 14px;
-    }
-
-    .tts-speed {
-        flex-wrap: wrap;
-    }
-
-    .tts-speed__btn {
-        flex: 1 0 calc(33.333% - 6px);
-    }
-
-    .tts-textarea {
-        min-height: 92px;
     }
 
     /* ── IDLE STATE: tighter typography ── */
@@ -674,7 +649,6 @@
     }
 
     .config-modal.call-popover,
-    .config-modal.tts-popover,
     .config-modal.config-popover,
     .modal-overlay .config-modal {
         max-height: 92vh;
@@ -808,7 +782,6 @@
 
     /* Bottom sheets should not eat the whole landscape viewport */
     .config-modal.call-popover,
-    .config-modal.tts-popover,
     .config-modal.config-popover,
     .modal-overlay .config-modal {
         max-height: 86vh;
