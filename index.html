@@ -9,6 +9,26 @@
     <link rel="apple-touch-icon" href="%BASE_URL%favicon.svg">
     <title>Stringee Call Center</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Track every RTCPeerConnection the SDK creates so the WebRTC stats tab can call getStats().
+         Must run before the SDK script in case it captures the constructor at load time. -->
+    <script>
+        (function () {
+            var Native = window.RTCPeerConnection;
+            if (!Native) return;
+            var peers = window.__rtcPeers = [];
+            function Tracked(config, constraints) {
+                var pc = new Native(config, constraints);
+                try { pc.__createdAt = Date.now(); } catch (e) { /* noop */ }
+                peers.push(pc);
+                if (peers.length > 20) peers.shift();
+                return pc;
+            }
+            Tracked.prototype = Native.prototype;
+            Object.setPrototypeOf(Tracked, Native);
+            window.RTCPeerConnection = Tracked;
+            if (window.webkitRTCPeerConnection) window.webkitRTCPeerConnection = Tracked;
+        })();
+    </script>
     <script type="text/javascript" src="https://cdn.stringee.com/sdk/web/latest/stringee-web-sdk.min.js"></script>
 </head>
 

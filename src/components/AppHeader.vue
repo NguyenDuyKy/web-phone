@@ -34,6 +34,17 @@
         <i class="bi bi-sliders2"></i>
       </button>
       <button
+        class="btn-config btn-config--icon btn-rtc-trigger"
+        :class="{ active: store.rtcPanel.active }"
+        @click.stop="onToggleRtc"
+        title="Thông số WebRTC"
+        aria-label="Thông số WebRTC"
+        :aria-expanded="store.rtcPanel.active"
+      >
+        <i class="bi bi-activity"></i>
+        <span v-if="rtc.status === 'live'" class="btn-rtc-trigger__live" aria-hidden="true"></span>
+      </button>
+      <button
         class="btn-config btn-config--icon"
         @click="onToggleTheme"
         :title="store.theme === 'dark' ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'"
@@ -62,15 +73,17 @@
 </template>
 
 <script>
-import { store, toggleConfigModal, toggleTheme, toggleCallModal, toggleSidebar } from '../store';
+import { store, toggleConfigModal, toggleTheme, toggleCallModal, toggleSidebar, toggleRtcPanel } from '../store';
+import { rtc } from '../webrtcStats';
 
 export default {
   name: 'AppHeader',
   data() {
-    return { store };
+    return { store, rtc };
   },
   methods: {
     onToggleConfig() { toggleConfigModal(); },
+    onToggleRtc() { toggleRtcPanel(); },
     onToggleTheme() { toggleTheme(); },
     onToggleCall() { toggleCallModal(); },
     onToggleSidebar() { toggleSidebar(); },

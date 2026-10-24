@@ -1,5 +1,6 @@
 import { reactive } from 'vue';
 import { STRINGEE_SERVERS } from './constants';
+import { startRtcStats, stopRtcStats } from './webrtcStats';
 
 export const store = reactive({
     isConnected: false,
@@ -32,6 +33,7 @@ export const store = reactive({
     errorModal: { active: false, title: '', message: '' },
     infoModal: { active: false, input: '' },
     configModal: { active: false, token: '', hotline: '', toNumber: '' },
+    rtcPanel: { active: false },
     callModal: { active: false },
 
     callType: 'gsm',
@@ -196,6 +198,7 @@ export function openConfigModal() {
     store.configModal.token = saved.token || store.token || '';
     store.configModal.hotline = saved.hotline || store.hotline || '';
     store.configModal.toNumber = saved.toNumber || store.dialInput || '';
+    store.rtcPanel.active = false;
     store.configModal.active = true;
 }
 
@@ -208,6 +211,20 @@ export function toggleConfigModal() {
         closeConfigModal();
     } else {
         openConfigModal();
+    }
+}
+
+export function closeRtcPanel() {
+    store.rtcPanel.active = false;
+}
+
+export function toggleRtcPanel() {
+    const willOpen = !store.rtcPanel.active;
+    store.rtcPanel.active = willOpen;
+    if (willOpen) {
+        // Header popovers share the same spot — never stack them.
+        store.configModal.active = false;
+        store.sidebarOpen = false;
     }
 }
 
@@ -388,6 +405,7 @@ export function makeCall() {
     }
     store.currentCall = call;
     store.isVideoCall = isVideo;
+    startRtcStats(() => store.currentCall);
 
     showCallingUI(toNumber, isVideo);
     store.callModal.active = false;
@@ -402,6 +420,7 @@ export function makeCall() {
 function handleIncomingCall(incoming, isVideo) {
     store.currentCall = incoming;
     store.isVideoCall = isVideo;
+    startRtcStats(() => store.currentCall);
     if (isVideo) setupCall2Events(incoming);
     else setupCallEvents(incoming);
 
@@ -618,6 +637,7 @@ function endCallUI() {
     if (store.hasIncoming) store.callModal.active = false;
     store.hasIncoming = false;
     store.currentCall = null;
+    stopRtcStats();
     stopCallTimer();
     stopRingtone();
 }

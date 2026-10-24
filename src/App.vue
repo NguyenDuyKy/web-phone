@@ -44,7 +44,9 @@
     <ErrorModal />
     <InfoModal />
     <ConfigModal />
+    <RtcStatsPopover />
     <CallModal />
+    <StatPopover />
   </div>
 </template>
 
@@ -57,7 +59,9 @@ import CallView from './components/CallView.vue';
 import ErrorModal from './components/ErrorModal.vue';
 import InfoModal from './components/InfoModal.vue';
 import ConfigModal from './components/ConfigModal.vue';
+import RtcStatsPopover from './components/RtcStatsPopover.vue';
 import CallModal from './components/CallModal.vue';
+import StatPopover from './components/StatPopover.vue';
 
 export default {
   name: 'App',
@@ -69,7 +73,9 @@ export default {
     ErrorModal,
     InfoModal,
     ConfigModal,
+    RtcStatsPopover,
     CallModal,
+    StatPopover,
   },
   data() {
     return { store };
