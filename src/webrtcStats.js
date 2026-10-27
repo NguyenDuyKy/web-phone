@@ -23,9 +23,7 @@ export const rtc = reactive(emptyState());
 let pollTimer = null;
 let getCall = null;
 let sessionStart = 0;
-let prevStats = new Map();
-const peerIds = new WeakMap();
-let nextPeerId = 1;
+let prevByPc = new WeakMap();
 
 /* ─────────────────────────────────────────────────────────────
    POLLING LIFECYCLE
@@ -37,7 +35,7 @@ export function startRtcStats(callGetter) {
     getCall = callGetter;
     // Allow a small window: an incoming call may create its PC slightly before we start.
     sessionStart = Date.now() - 2000;
-    prevStats = new Map();
+    prevByPc = new WeakMap();
     pollTimer = setInterval(poll, POLL_INTERVAL_MS);
     poll();
 }
@@ -79,11 +77,6 @@ function findPeers() {
     return [...found].filter((pc) => pc.signalingState !== 'closed');
 }
 
-function peerId(pc) {
-    if (!peerIds.has(pc)) peerIds.set(pc, nextPeerId++);
-    return peerIds.get(pc);
-}
-
 async function poll() {
     const peers = findPeers();
     rtc.peerCount = peers.length;
@@ -98,9 +91,11 @@ async function poll() {
     // Call ended while getStats() was in flight.
     if (!pollTimer) return;
 
-    const nextPrev = new Map();
-    const parsed = results.map(({ pc, report }) => parsePeer(pc, report, nextPrev));
-    prevStats = nextPrev;
+    const parsed = results.map(({ pc, report }) => {
+        const { stats, prev } = parseReport(report, prevByPc.get(pc), pc);
+        prevByPc.set(pc, prev);
+        return stats;
+    });
 
     const pickBy = (slot, field) => parsed
         .map((p) => p[slot])
@@ -146,10 +141,13 @@ function pushHistory(key, value) {
 /* ─────────────────────────────────────────────────────────────
    STATS PARSING (W3C webrtc-stats)
    ──────────────────────────────────────────────────────────── */
-function parsePeer(pc, report, nextPrev) {
-    const id = peerId(pc);
+// Pure: one getStats() report (or any Map of stats objects, e.g. rebuilt from a
+// webrtc-internals dump) + the previous sample → parsed stats and the next `prev`.
+// `pcState` supplies connectionState / iceConnectionState (an RTCPeerConnection works).
+export function parseReport(report, prev = new Map(), pcState = {}) {
     const byId = (sid) => (sid ? report.get(sid) : undefined);
-    const out = { conn: null, audioIn: null, audioOut: null, videoIn: null, videoOut: null };
+    const out = { conn: null, audioIn: null, audioOut: null, videoIn: null, videoOut: null, quality: null };
+    const next = new Map();
 
     const remoteInbound = new Map();
     let transport = null;
@@ -159,11 +157,10 @@ function parsePeer(pc, report, nextPrev) {
     });
 
     report.forEach((s) => {
-        const key = id + ':' + s.id;
-        if (s.type === 'inbound-rtp' || s.type === 'outbound-rtp') nextPrev.set(key, s);
-        const prev = prevStats.get(key);
-        const dt = prev ? (s.timestamp - prev.timestamp) / 1000 : 0;
-        const delta = (f) => (prev && dt > 0 && s[f] != null && prev[f] != null ? s[f] - prev[f] : null);
+        if (s.type === 'inbound-rtp' || s.type === 'outbound-rtp') next.set(s.id, s);
+        const before = prev.get(s.id);
+        const dt = before ? (s.timestamp - before.timestamp) / 1000 : 0;
+        const delta = (f) => (before && dt > 0 && s[f] != null && before[f] != null ? s[f] - before[f] : null);
         const kind = s.kind || s.mediaType;
 
         if (s.type === 'inbound-rtp') {
@@ -177,8 +174,13 @@ function parsePeer(pc, report, nextPrev) {
         }
     });
 
-    out.conn = parseConnection(pc, report, transport, byId);
-    return out;
+    out.conn = parseConnection(pcState, report, transport, byId);
+    if (out.conn.rtt == null) {
+        const fallback = (out.audioOut && out.audioOut.remoteRtt) ?? (out.videoOut && out.videoOut.remoteRtt);
+        if (fallback != null) out.conn.rtt = fallback;
+    }
+    out.quality = estimateQuality(out.conn, out.audioIn);
+    return { stats: out, prev: next };
 }
 
 function codecLabel(codec) {

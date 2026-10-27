@@ -48,6 +48,7 @@
 import { nextTick } from 'vue';
 import { hoverPopover, cancelClose, requestClose, closePopover } from '../hoverPopover';
 import { rtc, METRICS, SECTION_LABELS, findRow, thresholdText } from '../webrtcStats';
+import { dump, currentDumpState } from '../webrtcDump';
 
 const GAP = 10;
 const EDGE = 12;
@@ -65,6 +66,7 @@ export default {
     return {
       hoverPopover,
       rtc,
+      dump,
       LEVELS,
       visible: false,
       gliding: false,
@@ -80,14 +82,16 @@ export default {
       return METRICS[hoverPopover.metric] || null;
     },
     row() {
-      // Reads live rtc state → the value keeps ticking while the popover is open.
-      return findRow(rtc, hoverPopover.section, hoverPopover.metric);
+      // Reactive source → the value keeps ticking (live) or follows the timeline cursor (dump).
+      const state = hoverPopover.source === 'dump' ? currentDumpState() : rtc;
+      return state ? findRow(state, hoverPopover.section, hoverPopover.metric) : null;
     },
     thresholds() {
       return thresholdText(hoverPopover.metric);
     },
     sectionLabel() {
-      return SECTION_LABELS[hoverPopover.section] || 'WebRTC';
+      const label = SECTION_LABELS[hoverPopover.section] || 'WebRTC';
+      return hoverPopover.source === 'dump' ? label + ' · file dump' : label;
     },
     contentKey() {
       return hoverPopover.section + ':' + hoverPopover.metric;
@@ -98,6 +102,9 @@ export default {
     'hoverPopover.anchor': 'sync',
     'rtc.updatedAt'() {
       if (this.visible) this.place(true);
+    },
+    'dump.cursor'() {
+      if (this.visible) this.$nextTick(() => this.place(true));
     },
   },
   mounted() {

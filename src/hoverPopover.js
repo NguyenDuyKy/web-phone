@@ -12,6 +12,7 @@ export const hoverPopover = reactive({
     anchor: null,
     section: '',
     metric: '',
+    source: 'live', // 'live' (current call) | 'dump' (uploaded webrtc-internals file)
 });
 
 let openTimer = null;
@@ -40,6 +41,7 @@ export function requestOpen(el, payload, { immediate = false, pinned = false } =
         hoverPopover.anchor = markRaw(el);
         hoverPopover.section = payload.section;
         hoverPopover.metric = payload.metric;
+        hoverPopover.source = payload.source || 'live';
         hoverPopover.pinned = pinned;
         hoverPopover.open = true;
     };
@@ -68,7 +70,7 @@ export function closePopover() {
     hoverPopover.pinned = false;
 }
 
-/* v-stat-tip="{ section, metric }" — hover (mouse), focus (keyboard), tap (touch). */
+/* v-stat-tip="{ section, metric, source? }" — hover (mouse), focus (keyboard), tap (touch). */
 export const vStatTip = {
     mounted(el, binding) {
         el.__statTip = binding.value;

@@ -34,6 +34,7 @@ export const store = reactive({
     infoModal: { active: false, input: '' },
     configModal: { active: false, token: '', hotline: '', toNumber: '' },
     rtcPanel: { active: false },
+    dumpPanel: { active: false },
     callModal: { active: false },
 
     callType: 'gsm',
@@ -199,6 +200,7 @@ export function openConfigModal() {
     store.configModal.hotline = saved.hotline || store.hotline || '';
     store.configModal.toNumber = saved.toNumber || store.dialInput || '';
     store.rtcPanel.active = false;
+    store.dumpPanel.active = false;
     store.configModal.active = true;
 }
 
@@ -224,8 +226,25 @@ export function toggleRtcPanel() {
     if (willOpen) {
         // Header popovers share the same spot — never stack them.
         store.configModal.active = false;
+        store.dumpPanel.active = false;
         store.sidebarOpen = false;
     }
+}
+
+export function openDumpPanel() {
+    store.configModal.active = false;
+    store.rtcPanel.active = false;
+    store.sidebarOpen = false;
+    store.dumpPanel.active = true;
+}
+
+export function closeDumpPanel() {
+    store.dumpPanel.active = false;
+}
+
+export function toggleDumpPanel() {
+    if (store.dumpPanel.active) closeDumpPanel();
+    else openDumpPanel();
 }
 
 export function saveDefaultConfig() {
