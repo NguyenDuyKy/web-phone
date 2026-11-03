@@ -45,20 +45,6 @@
         <span v-if="rtc.status === 'live'" class="btn-rtc-trigger__live" aria-hidden="true"></span>
       </button>
       <button
-        class="btn-config btn-config--icon btn-dump-trigger"
-        :class="{ active: store.dumpPanel.active, 'is-dragover': dumpDragOver, 'has-file': dump.status === 'ready' }"
-        @click.stop="onToggleDump"
-        @dragenter.prevent="dumpDragOver = true"
-        @dragover.prevent
-        @dragleave="dumpDragOver = false"
-        @drop.prevent="onDropDump"
-        title="Phân tích file dump WebRTC (chrome://webrtc-internals)"
-        aria-label="Phân tích file dump WebRTC"
-        :aria-expanded="store.dumpPanel.active"
-      >
-        <i class="bi bi-file-earmark-bar-graph"></i>
-      </button>
-      <button
         class="btn-config btn-config--icon"
         @click="onToggleTheme"
         :title="store.theme === 'dark' ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'"
@@ -87,27 +73,17 @@
 </template>
 
 <script>
-import { store, toggleConfigModal, toggleTheme, toggleCallModal, toggleSidebar, toggleRtcPanel, toggleDumpPanel, openDumpPanel } from '../store';
+import { store, toggleConfigModal, toggleTheme, toggleCallModal, toggleSidebar, toggleRtcPanel } from '../store';
 import { rtc } from '../webrtcStats';
-import { dump, loadDumpFile } from '../webrtcDump';
 
 export default {
   name: 'AppHeader',
   data() {
-    return { store, rtc, dump, dumpDragOver: false };
+    return { store, rtc };
   },
   methods: {
     onToggleConfig() { toggleConfigModal(); },
     onToggleRtc() { toggleRtcPanel(); },
-    onToggleDump() { toggleDumpPanel(); },
-    // Dropping a dump straight onto the header button opens the analyzer with it.
-    onDropDump(e) {
-      this.dumpDragOver = false;
-      const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
-      if (!file) return;
-      openDumpPanel();
-      loadDumpFile(file);
-    },
     onToggleTheme() { toggleTheme(); },
     onToggleCall() { toggleCallModal(); },
     onToggleSidebar() { toggleSidebar(); },

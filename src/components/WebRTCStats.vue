@@ -1,31 +1,30 @@
 <template>
   <div class="rtc-panel" data-pop-rail>
     <div v-if="!hasData" class="rtc-empty">
-      <div class="rtc-empty__icon" :class="{ 'is-waiting': view.status === 'waiting' }">
+      <div class="rtc-empty__icon" :class="{ 'is-waiting': rtc.status === 'waiting' }">
         <i class="bi bi-activity"></i>
       </div>
       <div class="rtc-empty__title">
-        {{ view.status === 'waiting' ? 'Đang chờ luồng media...' : 'Chưa có cuộc gọi' }}
+        {{ rtc.status === 'waiting' ? 'Đang chờ luồng media...' : 'Chưa có cuộc gọi' }}
       </div>
       <p class="rtc-empty__text">
-        {{ view.status === 'waiting'
+        {{ rtc.status === 'waiting'
             ? 'Thông số sẽ xuất hiện ngay khi kết nối WebRTC được thiết lập.'
             : 'Bắt đầu hoặc nhận một cuộc gọi để theo dõi RTT, jitter, mất gói, bitrate... theo thời gian thực.' }}
       </p>
     </div>
 
     <template v-else>
-      <div v-if="view.status === 'ended'" class="rtc-banner">
+      <div v-if="rtc.status === 'ended'" class="rtc-banner">
         <i class="bi bi-stop-circle"></i>
         Cuộc gọi đã kết thúc · số liệu lúc {{ updatedText }}
       </div>
 
       <div
-        v-if="showSummary"
         class="rtc-quality"
         :class="quality.level ? 'lvl-' + quality.level : ''"
         tabindex="0"
-        v-stat-tip="{ section: 'summary', metric: 'mos', source }"
+        v-stat-tip="{ section: 'summary', metric: 'mos' }"
       >
         <div class="rtc-quality__score">{{ quality.value }}</div>
         <div class="rtc-quality__text">
@@ -37,13 +36,13 @@
         </div>
       </div>
 
-      <div v-if="showSummary" class="rtc-cards">
+      <div class="rtc-cards">
         <div
           v-for="card in cards"
           :key="card.metric"
           class="rtc-card"
           tabindex="0"
-          v-stat-tip="{ section: 'summary', metric: card.metric, source }"
+          v-stat-tip="{ section: 'summary', metric: card.metric }"
         >
           <div class="rtc-card__label"><i :class="['bi', card.icon]"></i>{{ card.label }}</div>
           <div class="rtc-card__value" :class="card.level ? 'lvl-' + card.level : ''">{{ card.value }}</div>
@@ -80,7 +79,7 @@
               :key="r.metric"
               class="rtc-row"
               tabindex="0"
-              v-stat-tip="{ section: s.key, metric: r.metric, source }"
+              v-stat-tip="{ section: s.key, metric: r.metric }"
             >
               <span class="rtc-row__label">{{ METRICS[r.metric].label }}</span>
               <span class="rtc-row__value" :class="r.level ? 'lvl-' + r.level : ''">
@@ -103,13 +102,6 @@ const COLLAPSE_STORAGE_KEY = 'stringee_rtc_collapsed';
 export default {
   name: 'WebRTCStats',
   directives: { statTip: vStatTip },
-  props: {
-    // Stats to render; defaults to the live call. Same shape as `rtc`.
-    state: { type: Object, default: null },
-    // Where the hover tooltip reads its live value from: 'live' | 'dump'.
-    source: { type: String, default: 'live' },
-    showSummary: { type: Boolean, default: true },
-  },
   data() {
     let collapsed = {};
     try {
@@ -118,23 +110,20 @@ export default {
     return { rtc, METRICS, collapsed };
   },
   computed: {
-    view() {
-      return this.state || rtc;
-    },
     hasData() {
-      return !!this.view.updatedAt && this.view.status !== 'idle';
+      return !!rtc.updatedAt && rtc.status !== 'idle';
     },
     quality() {
-      return qualitySummary(this.view);
+      return qualitySummary(rtc);
     },
     cards() {
-      return summaryCards(this.view);
+      return summaryCards(rtc);
     },
     sections() {
-      return buildSections(this.view);
+      return buildSections(rtc);
     },
     updatedText() {
-      return this.view.updatedAt ? new Date(this.view.updatedAt).toLocaleTimeString('vi-VN') : '';
+      return rtc.updatedAt ? new Date(rtc.updatedAt).toLocaleTimeString('vi-VN') : '';
     },
   },
   methods: {

@@ -45,7 +45,6 @@
     <InfoModal />
     <ConfigModal />
     <RtcStatsPopover />
-    <DumpAnalyzerPopover />
     <CallModal />
     <StatPopover />
   </div>
@@ -61,7 +60,6 @@ import ErrorModal from './components/ErrorModal.vue';
 import InfoModal from './components/InfoModal.vue';
 import ConfigModal from './components/ConfigModal.vue';
 import RtcStatsPopover from './components/RtcStatsPopover.vue';
-import DumpAnalyzerPopover from './components/DumpAnalyzerPopover.vue';
 import CallModal from './components/CallModal.vue';
 import StatPopover from './components/StatPopover.vue';
 
@@ -76,7 +74,6 @@ export default {
     InfoModal,
     ConfigModal,
     RtcStatsPopover,
-    DumpAnalyzerPopover,
     CallModal,
     StatPopover,
   },

@@ -9,7 +9,6 @@ import './styles/popovers.css';
 import './styles/screens.css';
 import './styles/dialer.css';
 import './styles/webrtc.css';
-import './styles/dump.css';
 import './styles/responsive.css';
 import './styles/light-theme.css';
 
